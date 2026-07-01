@@ -1,0 +1,1031 @@
+Index · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainMCQ — Turn Notes Into Exam-Ready Questions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ RESET & BASE ============ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+:root{
+  --bg-void:#05060a;
+  --bg-deep:#090b14;
+  --bg-surface:#0d1020;
+  --bg-surface-2:#10142a;
+  --glass-bg:rgba(255,255,255,0.035);
+  --glass-bg-strong:rgba(255,255,255,0.06);
+  --glass-border:rgba(255,255,255,0.09);
+  --glass-border-strong:rgba(255,255,255,0.16);
+  --text-primary:#f2f3f9;
+  --text-secondary:#9aa0b8;
+  --text-tertiary:#5d6280;
+  --violet:#7c5cfc;
+  --violet-bright:#9b82ff;
+  --indigo:#5b6cff;
+  --cyan:#3ce0ff;
+  --teal:#2de6c4;
+  --magenta:#ff4fd8;
+  --amber:#ffb454;
+  --danger:#ff5c7a;
+  --grad-primary:linear-gradient(135deg,#7c5cfc 0%,#5b6cff 45%,#3ce0ff 100%);
+  --grad-text:linear-gradient(135deg,#c8b6ff 0%,#9b82ff 35%,#3ce0ff 100%);
+  --grad-teal:linear-gradient(135deg,#2de6c4 0%,#3ce0ff 100%);
+  --font-display:'Space Grotesk',ui-sans-serif,sans-serif;
+  --font-body:'Inter',ui-sans-serif,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+}
+html,body{height:100%;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg-void);
+  color:var(--text-primary);
+  overflow-x:hidden;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+::selection{background:rgba(124,92,252,0.35);color:#fff;}
+::-webkit-scrollbar{width:10px;}
+::-webkit-scrollbar-track{background:var(--bg-void);}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--violet),var(--cyan));border-radius:10px;border:2px solid var(--bg-void);}
+a{color:inherit;text-decoration:none;}
+ul{list-style:none;}
+img,svg{display:block;max-width:100%;}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;letter-spacing:-0.02em;line-height:1.05;}
+.container{width:100%;max-width:1240px;margin:0 auto;padding:0 32px;}
+.gradient-text{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.mono{font-family:var(--font-mono);}
+ 
+/* ============ BACKGROUND LAYERS ============ */
+#bg-fixed{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:var(--bg-void);}
+#particle-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.55;}
+.noise-overlay{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.grid-overlay{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(255,255,255,0.035) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,0.035) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 0%,#000 30%,transparent 80%);
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 0%,#000 30%,transparent 80%);
+}
+.aurora-blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.55;will-change:transform;}
+.cursor-glow{position:fixed;width:520px;height:520px;border-radius:50%;pointer-events:none;z-index:3;
+  background:radial-gradient(circle,rgba(124,92,252,0.14) 0%,rgba(60,224,255,0.06) 40%,transparent 70%);
+  transform:translate(-50%,-50%);mix-blend-mode:screen;transition:opacity .4s;will-change:transform;}
+ 
+/* spine: synapse trace line running down the page, signature element */
+#spine{position:fixed;left:28px;top:0;bottom:0;width:2px;z-index:4;pointer-events:none;display:none;}
+#spine .track{position:absolute;inset:0;background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.08) 8%,rgba(255,255,255,0.08) 92%,transparent);}
+#spine .fill{position:absolute;top:0;left:0;width:100%;height:0%;background:linear-gradient(to bottom,var(--teal),var(--cyan),var(--violet));box-shadow:0 0 12px rgba(60,224,255,0.6);border-radius:2px;}
+#spine .node{position:absolute;left:50%;width:8px;height:8px;border-radius:50%;background:var(--bg-deep);border:2px solid var(--text-tertiary);transform:translateX(-50%);transition:all .4s var(--ease-out);}
+#spine .node.active{border-color:var(--teal);background:var(--teal);box-shadow:0 0 10px var(--teal);}
+ 
+/* ============ NAV ============ */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:all .4s var(--ease-out);}
+nav.scrolled{padding:12px 0;background:rgba(5,6,10,0.7);backdrop-filter:blur(16px) saturate(150%);border-bottom:1px solid var(--glass-border);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:600;font-size:18px;letter-spacing:-0.01em;}
+.logo .mark{width:30px;height:30px;border-radius:9px;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 18px rgba(124,92,252,0.5);}
+.logo .mark::after{content:'';position:absolute;inset:0;border-radius:9px;background:inherit;filter:blur(8px);opacity:.6;z-index:-1;}
+.nav-links{display:flex;gap:36px;align-items:center;}
+.nav-links a{font-size:14px;color:var(--text-secondary);transition:color .25s;position:relative;}
+.nav-links a:hover{color:var(--text-primary);}
+.nav-links a::after{content:'';position:absolute;left:0;bottom:-6px;width:0;height:1px;background:var(--grad-teal);transition:width .3s var(--ease-out);}
+.nav-links a:hover::after{width:100%;}
+.nav-cta{display:flex;align-items:center;gap:18px;}
+.nav-cta .ghost-link{font-size:14px;color:var(--text-secondary);}
+.nav-cta .ghost-link:hover{color:var(--text-primary);}
+ 
+/* ============ BUTTONS ============ */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 26px;border-radius:12px;font-size:14.5px;font-weight:600;font-family:var(--font-body);
+  cursor:pointer;white-space:nowrap;transition:transform .35s var(--ease-spring),box-shadow .35s;will-change:transform;}
+.btn-primary{background:var(--grad-primary);color:#fff;box-shadow:0 8px 30px -8px rgba(124,92,252,0.65),inset 0 1px 0 rgba(255,255,255,0.25);}
+.btn-primary:hover{box-shadow:0 12px 40px -6px rgba(124,92,252,0.85),inset 0 1px 0 rgba(255,255,255,0.3);}
+.btn-primary .arrow{transition:transform .3s var(--ease-out);}
+.btn-primary:hover .arrow{transform:translateX(4px);}
+.btn-ghost{background:rgba(255,255,255,0.04);color:var(--text-primary);border:1px solid var(--glass-border);backdrop-filter:blur(10px);}
+.btn-ghost:hover{background:rgba(255,255,255,0.08);border-color:var(--glass-border-strong);}
+.btn-sm{padding:10px 18px;font-size:13px;border-radius:10px;}
+.btn-block{width:100%;}
+.play-icon{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.play-icon svg{width:8px;height:8px;}
+ 
+/* ============ EYEBROW / LABELS ============ */
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;border-radius:100px;
+  background:var(--glass-bg);border:1px solid var(--glass-border);font-family:var(--font-mono);font-size:11.5px;
+  letter-spacing:0.08em;color:var(--text-secondary);text-transform:uppercase;margin-bottom:22px;backdrop-filter:blur(10px);}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);animation:pulse-dot 2s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(0.8);}}
+ 
+/* ============ SECTION SCAFFOLD ============ */
+section{position:relative;z-index:5;padding:140px 0;}
+.section-head{max-width:680px;margin:0 0 64px;}
+.section-head.center{margin:0 auto 64px;text-align:center;}
+.section-head h2{font-size:clamp(30px,4vw,48px);margin-bottom:18px;}
+.section-head p{font-size:17px;color:var(--text-secondary);line-height:1.6;max-width:560px;}
+.section-head.center p{margin:0 auto;}
+ 
+/* ============ GLASS CARD ============ */
+.glass-card{position:relative;border-radius:20px;background:var(--glass-bg);border:1px solid var(--glass-border);
+  backdrop-filter:blur(18px) saturate(140%);overflow:hidden;transition:border-color .4s,transform .4s var(--ease-out),box-shadow .4s;}
+.glass-card::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.18),transparent 40%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.6;}
+.glass-card .spotlight{position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .4s;pointer-events:none;
+  background:radial-gradient(380px circle at var(--mx,50%) var(--my,50%),rgba(124,92,252,0.16),transparent 70%);}
+.glass-card:hover .spotlight{opacity:1;}
+.glass-card:hover{border-color:var(--glass-border-strong);transform:translateY(-4px);}
+ 
+/* ============ REVEAL ANIMATIONS ============ */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out);}
+.reveal.in-view{opacity:1;transform:translateY(0);}
+.reveal-scale{opacity:0;transform:scale(0.92);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out);}
+.reveal-scale.in-view{opacity:1;transform:scale(1);}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out);}
+.reveal-left.in-view{opacity:1;transform:translateX(0);}
+.reveal-right{opacity:0;transform:translateX(40px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out);}
+.reveal-right.in-view{opacity:1;transform:translateX(0);}
+ 
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;}
+}
+/* ============ HERO ============ */
+.hero{padding:200px 0 100px;min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;}
+.hero-inner{text-align:center;max-width:880px;margin:0 auto;position:relative;z-index:6;}
+.hero h1{font-size:clamp(38px,6.4vw,80px);margin-bottom:24px;letter-spacing:-0.03em;}
+.hero h1 span.line{display:block;}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--text-secondary);max-width:600px;margin:0 auto 42px;line-height:1.65;}
+.hero-cta-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:90px;flex-wrap:wrap;}
+.hero-trust{display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;color:var(--text-tertiary);font-family:var(--font-mono);}
+ 
+/* floating dashboard mockup */
+.hero-visual-wrap{perspective:1800px;max-width:1040px;margin:0 auto;position:relative;}
+.hero-visual{position:relative;border-radius:24px;background:linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015));
+  border:1px solid var(--glass-border-strong);backdrop-filter:blur(24px) saturate(150%);
+  box-shadow:0 40px 100px -20px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.02) inset,0 0 90px -20px rgba(124,92,252,0.35);
+  transform:rotateX(8deg) rotateY(-6deg);transform-style:preserve-3d;padding:22px;will-change:transform;transition:transform .1s linear;}
+.hero-visual-bar{display:flex;align-items:center;gap:7px;padding:4px 4px 18px;}
+.hero-visual-bar span{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.12);}
+.hero-visual-grid{display:grid;grid-template-columns:1.1fr 1.4fr;gap:18px;}
+.mini-panel{border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);padding:20px;}
+.note-lines span{display:block;height:9px;border-radius:5px;background:rgba(255,255,255,0.08);margin-bottom:10px;}
+.note-lines span:nth-child(1){width:90%;}
+.note-lines span:nth-child(2){width:75%;}
+.note-lines span:nth-child(3){width:85%;}
+.note-lines span:nth-child(4){width:60%;}
+.note-lines span:nth-child(5){width:70%;}
+.mcq-q{font-size:13px;color:var(--text-secondary);margin-bottom:14px;font-family:var(--font-mono);}
+.mcq-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.025);
+  border:1px solid var(--glass-border);margin-bottom:9px;font-size:13px;color:var(--text-secondary);transition:all .3s;}
+.mcq-opt .letter{width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,0.06);display:flex;align-items:center;
+  justify-content:center;font-family:var(--font-mono);font-size:10.5px;color:var(--text-tertiary);flex-shrink:0;}
+.mcq-opt.correct{border-color:rgba(45,230,196,0.5);background:rgba(45,230,196,0.07);color:var(--text-primary);
+  box-shadow:0 0 18px -4px rgba(45,230,196,0.4);}
+.mcq-opt.correct .letter{background:var(--grad-teal);color:#03261f;font-weight:700;}
+.float-badge{position:absolute;padding:10px 16px;border-radius:14px;background:rgba(13,16,32,0.8);border:1px solid var(--glass-border-strong);
+  backdrop-filter:blur(16px);font-size:12.5px;display:flex;align-items:center;gap:9px;box-shadow:0 14px 40px -10px rgba(0,0,0,0.6);
+  z-index:9;animation:float-y 5s ease-in-out infinite;}
+.float-badge .ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.float-badge strong{display:block;font-size:14px;font-family:var(--font-display);}
+.float-badge small{color:var(--text-tertiary);font-size:10.5px;font-family:var(--font-mono);}
+.badge-accuracy{top:-6%;left:-9%;animation-delay:0s;}
+.badge-streak{bottom:6%;right:-8%;animation-delay:1.2s;}
+.badge-mastery{top:38%;right:-12%;animation-delay:.6s;display:none;}
+@keyframes float-y{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+ 
+.scroll-cue{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;
+  align-items:center;gap:8px;color:var(--text-tertiary);font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;z-index:6;}
+.scroll-cue .mouse{width:22px;height:34px;border-radius:12px;border:1.5px solid var(--text-tertiary);position:relative;}
+.scroll-cue .mouse::after{content:'';position:absolute;top:6px;left:50%;width:3px;height:6px;background:var(--cyan);
+  border-radius:2px;transform:translateX(-50%);animation:scroll-wheel 1.8s ease-in-out infinite;}
+@keyframes scroll-wheel{0%{opacity:1;top:6px;}80%{opacity:0;top:18px;}100%{opacity:0;top:6px;}}
+ 
+/* ============ PROBLEM SECTION ============ */
+.problem-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+.problem-card{padding:28px 22px;min-height:200px;display:flex;flex-direction:column;justify-content:space-between;}
+.problem-card .pico{width:42px;height:42px;border-radius:11px;background:rgba(255,92,122,0.1);border:1px solid rgba(255,92,122,0.25);
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:var(--danger);}
+.problem-card h3{font-size:16px;font-weight:600;margin-bottom:8px;font-family:var(--font-display);}
+.problem-card p{font-size:13.5px;color:var(--text-tertiary);line-height:1.55;}
+ 
+/* ============ SOLUTION TIMELINE ============ */
+.timeline-wrap{position:relative;padding-top:30px;}
+.timeline-track{position:relative;display:flex;justify-content:space-between;align-items:flex-start;}
+.timeline-line-svg{position:absolute;top:29px;left:0;width:100%;height:4px;z-index:1;}
+.timeline-node{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;width:18%;}
+.timeline-node .node-circle{width:60px;height:60px;border-radius:50%;background:var(--bg-surface);border:1px solid var(--glass-border-strong);
+  display:flex;align-items:center;justify-content:center;margin-bottom:22px;position:relative;backdrop-filter:blur(10px);
+  box-shadow:0 0 0 6px var(--bg-void);transition:all .5s var(--ease-out);}
+.timeline-node.active .node-circle{border-color:var(--teal);box-shadow:0 0 0 6px var(--bg-void),0 0 28px -2px rgba(45,230,196,0.6);}
+.timeline-node .node-circle .ring{position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(124,92,252,0.3);
+  animation:spin-slow 12s linear infinite;}
+.timeline-node h4{font-size:14.5px;font-family:var(--font-display);font-weight:600;margin-bottom:7px;}
+.timeline-node p{font-size:12px;color:var(--text-tertiary);line-height:1.5;max-width:150px;}
+@keyframes spin-slow{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+ 
+/* ============ FEATURES (BENTO) ============ */
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:200px;gap:18px;}
+.bento .glass-card{padding:28px;display:flex;flex-direction:column;justify-content:flex-end;}
+.bento .f-large{grid-column:span 2;grid-row:span 2;}
+.bento .f-wide{grid-column:span 2;}
+.feat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:auto;
+  background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.25);color:var(--violet-bright);}
+.bento h3{font-size:17px;font-family:var(--font-display);font-weight:600;margin-bottom:8px;}
+.bento p{font-size:13.5px;color:var(--text-tertiary);line-height:1.55;}
+.f-large p{max-width:280px;}
+ 
+/* ============ AI PIPELINE SECTION ============ */
+.ai-section{position:relative;}
+.ai-core-wrap{position:relative;display:flex;align-items:center;justify-content:center;height:420px;margin-bottom:60px;}
+.ai-core{width:140px;height:140px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;z-index:5;
+  background:radial-gradient(circle at 35% 30%,#9b82ff,#5b6cff 55%,#221a4d 100%);
+  box-shadow:0 0 80px rgba(124,92,252,0.65),0 0 140px rgba(60,224,255,0.25),inset 0 0 30px rgba(255,255,255,0.25);
+  animation:core-pulse 4s ease-in-out infinite;}
+@keyframes core-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+.ai-core svg{width:54px;height:54px;color:#fff;}
+.ai-ring{position:absolute;border-radius:50%;border:1px solid rgba(124,92,252,0.25);}
+.ai-ring.r1{width:240px;height:240px;animation:spin-slow 18s linear infinite;}
+.ai-ring.r2{width:340px;height:340px;border-color:rgba(60,224,255,0.18);animation:spin-rev 26s linear infinite;}
+.ai-ring.r3{width:420px;height:420px;border-color:rgba(45,230,196,0.12);animation:spin-slow 34s linear infinite;}
+@keyframes spin-rev{from{transform:rotate(360deg);}to{transform:rotate(0);}}
+.pipeline-particle{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+.pipeline-stages{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+.pipeline-stage{text-align:center;padding:22px 14px;}
+.pipeline-stage .stage-num{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);margin-bottom:10px;letter-spacing:.1em;}
+.pipeline-stage h4{font-size:14.5px;font-family:var(--font-display);margin-bottom:6px;}
+.pipeline-stage p{font-size:12px;color:var(--text-tertiary);}
+ 
+/* ============ DASHBOARD SHOWCASE ============ */
+.dash-panel{border-radius:24px;background:linear-gradient(160deg,rgba(255,255,255,0.045),rgba(255,255,255,0.01));
+  border:1px solid var(--glass-border-strong);backdrop-filter:blur(20px);padding:28px;
+  box-shadow:0 40px 100px -30px rgba(0,0,0,0.7),0 0 80px -30px rgba(60,224,255,0.18);}
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px;}
+.stat-card{padding:20px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);}
+.stat-card .stat-label{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.stat-card .stat-value{font-size:30px;font-family:var(--font-display);font-weight:600;}
+.stat-card .stat-value sub{font-size:16px;color:var(--text-tertiary);}
+.stat-card .stat-trend{font-size:12px;color:var(--teal);margin-top:6px;font-family:var(--font-mono);}
+.dash-row{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;}
+.dash-card{padding:24px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);}
+.dash-card h4{font-family:var(--font-display);font-size:14px;margin-bottom:18px;color:var(--text-secondary);font-weight:500;}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:140px;}
+.bar-chart .bar{flex:1;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--violet-bright),var(--indigo));
+  position:relative;height:0;transition:height 1.4s var(--ease-spring);}
+.bar-chart .bar span{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:10px;font-family:var(--font-mono);color:var(--text-tertiary);}
+.topic-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.topic-row .t-label{width:100px;font-size:12.5px;color:var(--text-secondary);flex-shrink:0;}
+.topic-row .t-bar-bg{flex:1;height:7px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;}
+.topic-row .t-bar-fill{height:100%;border-radius:6px;background:var(--grad-teal);width:0;transition:width 1.4s var(--ease-spring);}
+.topic-row .t-pct{width:34px;text-align:right;font-size:11.5px;font-family:var(--font-mono);color:var(--text-tertiary);}
+.heatmap{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;margin-top:6px;}
+.heatmap .cell{aspect-ratio:1;border-radius:3px;background:rgba(45,230,196,calc(0.05 + var(--lvl,0)*0.19));}
+ 
+/* ============ TESTIMONIALS ============ */
+.marquee-wrap{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);}
+.marquee-track{display:flex;gap:20px;width:max-content;animation:marquee 42s linear infinite;}
+.marquee-track:hover{animation-play-state:paused;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.t-card{width:340px;flex-shrink:0;padding:26px;border-radius:18px;}
+.t-card .stars{color:var(--amber);font-size:13px;margin-bottom:14px;letter-spacing:2px;}
+.t-card p{font-size:14.5px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;}
+.t-author{display:flex;align-items:center;gap:12px;}
+.t-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:600;font-size:13px;color:#fff;flex-shrink:0;}
+.t-author strong{display:block;font-size:13.5px;}
+.t-author span{font-size:12px;color:var(--text-tertiary);}
+ 
+/* ============ PRICING ============ */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start;}
+.price-card{padding:34px 28px;}
+.price-card.featured{border-color:rgba(124,92,252,0.5);background:linear-gradient(160deg,rgba(124,92,252,0.1),rgba(60,224,255,0.03));
+  transform:scale(1.04);box-shadow:0 30px 70px -20px rgba(124,92,252,0.35);}
+.price-card .pop-badge{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;
+  padding:5px 10px;border-radius:100px;background:var(--grad-primary);color:#fff;text-transform:uppercase;}
+.price-card h3{font-size:18px;font-family:var(--font-display);margin-bottom:6px;}
+.price-card .ptag{font-size:13px;color:var(--text-tertiary);margin-bottom:22px;}
+.price-card .pamount{display:flex;align-items:baseline;gap:5px;margin-bottom:26px;}
+.price-card .pamount .num{font-size:42px;font-family:var(--font-display);font-weight:600;}
+.price-card .pamount .per{font-size:13px;color:var(--text-tertiary);}
+.plist{margin-bottom:28px;}
+.plist li{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--text-secondary);padding:8px 0;border-top:1px solid rgba(255,255,255,0.05);}
+.plist li:first-child{border-top:none;}
+.plist li svg{width:15px;height:15px;color:var(--teal);flex-shrink:0;}
+ 
+/* ============ FINAL CTA ============ */
+.final-cta{text-align:center;padding:80px 60px;border-radius:32px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,rgba(124,92,252,0.12),rgba(13,16,32,0.4));border:1px solid var(--glass-border-strong);}
+.final-cta h2{font-size:clamp(30px,4.6vw,52px);margin-bottom:20px;}
+.final-cta p{color:var(--text-secondary);font-size:16px;margin-bottom:38px;}
+ 
+/* ============ FOOTER ============ */
+footer{padding:70px 0 36px;border-top:1px solid var(--glass-border);position:relative;z-index:5;}
+.footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:50px;}
+.footer-brand p{font-size:13.5px;color:var(--text-tertiary);margin-top:14px;max-width:260px;line-height:1.6;}
+.footer-col h5{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-tertiary);margin-bottom:16px;}
+.footer-col a{display:block;font-size:13.5px;color:var(--text-secondary);padding:6px 0;transition:color .25s;}
+.footer-col a:hover{color:var(--text-primary);}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--glass-border);
+  font-size:12.5px;color:var(--text-tertiary);}
+.social-row{display:flex;gap:14px;}
+.social-row a{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:center;transition:all .3s;}
+.social-row a:hover{background:rgba(255,255,255,0.08);border-color:var(--glass-border-strong);transform:translateY(-2px);}
+ 
+@media (min-width:1300px){ #spine{display:block;} }
+ 
+/* ============ RESPONSIVE ============ */
+@media (max-width:1024px){
+  .problem-grid{grid-template-columns:repeat(2,1fr);}
+  .bento{grid-template-columns:repeat(2,1fr);}
+  .bento .f-large{grid-column:span 2;grid-row:span 1;min-height:240px;}
+  .pricing-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto;}
+  .price-card.featured{transform:scale(1);}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+  .timeline-track{flex-direction:column;align-items:flex-start;gap:36px;}
+  .timeline-node{width:100%;flex-direction:row;text-align:left;gap:18px;}
+  .timeline-node .node-circle{margin-bottom:0;flex-shrink:0;}
+  .timeline-line-svg{display:none;}
+  .dash-grid{grid-template-columns:repeat(2,1fr);}
+  .dash-row{grid-template-columns:1fr;}
+  .pipeline-stages{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:768px){
+  .nav-links{display:none;}
+  section{padding:90px 0;}
+  .hero{padding:140px 0 60px;}
+  .hero-visual{padding:14px;}
+  .hero-visual-grid{grid-template-columns:1fr;}
+  .float-badge{display:none;}
+  .problem-grid{grid-template-columns:1fr;}
+  .bento{grid-template-columns:1fr;grid-auto-rows:auto;}
+  .bento .f-large,.bento .f-wide{grid-column:span 1;}
+  .bento .glass-card{min-height:170px;}
+  .footer-grid{grid-template-columns:1fr;gap:30px;}
+  .footer-bottom{flex-direction:column;gap:16px;}
+  .container{padding:0 20px;}
+  .heatmap{grid-template-columns:repeat(8,1fr);}
+}
+</style>
+</head>
+<body>
+ 
+<div id="bg-fixed">
+  <div class="grid-overlay"></div>
+  <div class="aurora-blob" id="auroraA" style="width:560px;height:560px;background:#7c5cfc;top:-10%;left:-8%;"></div>
+  <div class="aurora-blob" id="auroraB" style="width:480px;height:480px;background:#3ce0ff;top:8%;right:-10%;opacity:.35;"></div>
+  <div class="aurora-blob" id="auroraC" style="width:520px;height:520px;background:#ff4fd8;top:48%;left:38%;opacity:.18;"></div>
+  <div class="aurora-blob" id="auroraD" style="width:460px;height:460px;background:#2de6c4;bottom:-6%;right:6%;opacity:.22;"></div>
+</div>
+<canvas id="particle-canvas"></canvas>
+<div class="noise-overlay"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+ 
+<nav id="mainNav">
+  <div class="container nav-inner">
+    <div class="logo">
+      <span class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6V12C4 16.5 7.4 20.7 12 22C16.6 20.7 20 16.5 20 12V6L12 2Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="rgba(255,255,255,0.15)"/><path d="M9 12L11 14L15 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      BrainMCQ
+    </div>
+    <ul class="nav-links">
+      <li><a href="#solution">Product</a></li>
+      <li><a href="#ai-engine">How it works</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#pricing" class="ghost-link">Sign in</a>
+      <button class="btn btn-primary btn-sm magnetic">Start Generating</button>
+    </div>
+  </div>
+</nav>
+ 
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="container hero-inner">
+    <div class="eyebrow reveal in-view"><span class="dot"></span>AI-Powered Active Recall</div>
+    <h1 class="reveal in-view" style="transition-delay:.08s">
+      <span class="line">Turn Notes Into</span>
+      <span class="line gradient-text">Exam-Ready Questions</span>
+    </h1>
+    <p class="hero-sub reveal in-view" style="transition-delay:.16s">
+      BrainMCQ transforms PDFs, notes, and study materials into personalized AI-generated MCQs —
+      so you stop re-reading and start recalling.
+    </p>
+    <div class="hero-cta-row reveal in-view" style="transition-delay:.24s">
+      <button class="btn btn-primary magnetic">Start Generating <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="btn btn-ghost magnetic" id="watchDemoBtn"><span class="play-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>Watch Demo</button>
+    </div>
+  </div>
+ 
+  <div class="container">
+    <div class="hero-visual-wrap reveal-scale in-view" style="transition-delay:.34s">
+      <div class="float-badge badge-accuracy">
+        <span class="ico" style="background:rgba(45,230,196,0.15);color:#2de6c4;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><strong>94% Accuracy</strong><small>This week</small></div>
+      </div>
+      <div class="float-badge badge-streak">
+        <span class="ico" style="background:rgba(255,180,84,0.15);color:#ffb454;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 6 9 6 14a6 6 0 0012 0c0-3-2-5-2-5s-1 2-2 1c-1-1 0-4-2-8z" fill="currentColor"/></svg></span>
+        <div><strong>21 Day Streak</strong><small>Keep it going</small></div>
+      </div>
+      <div class="float-badge badge-mastery">
+        <span class="ico" style="background:rgba(124,92,252,0.18);color:#9b82ff;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg></span>
+        <div><strong>12 Topics</strong><small>Mastered</small></div>
+      </div>
+      <div class="hero-visual" id="heroVisual">
+        <div class="hero-visual-bar"><span></span><span></span><span></span></div>
+        <div class="hero-visual-grid">
+          <div class="mini-panel">
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);margin-bottom:16px;letter-spacing:.05em;">SOURCE.PDF · CH 4</div>
+            <div class="note-lines"><span></span><span></span><span></span><span></span><span></span></div>
+          </div>
+          <div class="mini-panel">
+            <div class="mcq-q">Q3. What is the primary function of mitochondria?</div>
+            <div class="mcq-opt"><span class="letter">A</span> Protein synthesis</div>
+            <div class="mcq-opt"><span class="letter">B</span> Cell division</div>
+            <div class="mcq-opt correct"><span class="letter">C</span> ATP production</div>
+            <div class="mcq-opt"><span class="letter">D</span> Waste removal</div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-cue"><span>SCROLL</span><div class="mouse"></div></div>
+    </div>
+  </div>
+</header>
+ 
+<!-- ============ PROBLEM ============ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow"><span class="dot" style="background:var(--danger);box-shadow:0 0 8px var(--danger);"></span>The Problem</div>
+      <h2>Studying isn't the hard part.<br>Testing yourself is.</h2>
+      <p>Most students spend hours highlighting notes and re-reading slides — the least effective way to make information stick.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="glass-card problem-card reveal" style="transition-delay:.05s">
+        <div class="spotlight"></div>
+        <div class="pico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="currentColor" stroke-width="1.8"/></svg></div>
+        <div><h3>Passive Learning</h3><p>Reading and highlighting feels productive but builds recognition, not recall.</p></div>
+      </div>
+      <div class="glass-card problem-card reveal" style="transition-delay:.1s">
+        <div class="spotlight"></div>
+        <div class="pico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div><h3>Poor Retention</h3><p>Without active testing, most material is forgotten within days, not weeks.</p></div>
+      </div>
+      <div class="glass-card problem-card reveal" style="transition-delay:.15s">
+        <div class="spotlight"></div>
+        <div class="pico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div><h3>Time Wasted Searching</h3><p>Hours lost hunting the web for question banks that match your syllabus.</p></div>
+      </div>
+      <div class="glass-card problem-card reveal" style="transition-delay:.2s">
+        <div class="spotlight"></div>
+        <div class="pico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.8"/></svg></div>
+        <div><h3>Generic Question Banks</h3><p>Pre-made MCQs rarely match your notes, your course, or your weak points.</p></div>
+      </div>
+      <div class="glass-card problem-card reveal" style="transition-delay:.25s">
+        <div class="spotlight"></div>
+        <div class="pico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <div><h3>Lack of Active Recall</h3><p>The single most proven study method is also the one students skip most.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ SOLUTION TIMELINE ============ -->
+<section id="solution">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="eyebrow"><span class="dot"></span>The Solution</div>
+      <h2>From notes to mastery,<br>automatically</h2>
+      <p>One pipeline turns whatever you already have into a personalized, exam-grade practice loop.</p>
+    </div>
+    <div class="timeline-wrap reveal">
+      <div class="timeline-track" id="timelineTrack">
+        <svg class="timeline-line-svg" preserveAspectRatio="none" viewBox="0 0 1000 4">
+          <line x1="0" y1="2" x2="1000" y2="2" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+          <line id="timelineProgress" x1="0" y1="2" x2="0" y2="2" stroke="url(#tgrad)" stroke-width="3"/>
+          <defs><linearGradient id="tgrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2de6c4"/><stop offset="60%" stop-color="#3ce0ff"/><stop offset="100%" stop-color="#7c5cfc"/></linearGradient></defs>
+        </svg>
+        <div class="timeline-node" data-tnode>
+          <div class="node-circle"><div class="ring"></div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8"><path d="M6.5 2H17v6h6v14H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M17 2l6 6"/></svg></div>
+          <h4>PDF / Topic</h4><p>Upload a file or just type a topic</p>
+        </div>
+        <div class="timeline-node" data-tnode>
+          <div class="node-circle"><div class="ring"></div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M2 12h4M18 12h4M4.2 19.8l2.9-2.9M16.9 7.1l2.9-2.9"/></svg></div>
+          <h4>AI Analysis</h4><p>Key concepts and structure extracted</p>
+        </div>
+        <div class="timeline-node" data-tnode>
+          <div class="node-circle"><div class="ring"></div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg></div>
+          <h4>MCQ Generation</h4><p>Exam-style questions, instantly built</p>
+        </div>
+        <div class="timeline-node" data-tnode>
+          <div class="node-circle"><div class="ring"></div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <h4>Practice</h4><p>Active recall, with instant feedback</p>
+        </div>
+        <div class="timeline-node" data-tnode>
+          <div class="node-circle"><div class="ring"></div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8"><path d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5L12 17l-6.5 4.5L8 14l-6-4.5h7.5z"/></svg></div>
+          <h4>Exam Readiness</h4><p>Walk in knowing exactly where you stand</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ FEATURES ============ -->
+<section id="features">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow"><span class="dot"></span>Features</div>
+      <h2>Built for how memory<br>actually works</h2>
+      <p>Every feature exists to move you from recognizing an answer to recalling it cold.</p>
+    </div>
+    <div class="bento">
+      <div class="glass-card f-large reveal-scale" style="transition-delay:0s">
+        <div class="spotlight"></div>
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <h3>Personalized MCQs</h3>
+        <p>Questions generated from your exact notes and syllabus — not a generic bank that half-matches your course.</p>
+      </div>
+      <div class="glass-card reveal-scale" style="transition-delay:.05s">
+        <div class="spotlight"></div>
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l1.8 5.6H20l-4.6 3.4L17 17l-5-3.6L7 17l1.6-6L4 7.6h6.2z"/></svg></div>
+        <h3>AI Explanations</h3>
+        <p>Every answer comes with a clear breakdown of why it's right — and why the others aren't.</p>
+      </div>
+      <div class="glass-card reveal-scale" style="transition-delay:.1s">
+        <div class="spotlight"></div>
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0z"/><path d="M12 7v5l3 3"/></svg></div>
+        <h3>Active Recall Learning</h3>
+        <p>Built around spaced, effortful retrieval — the method backed by decades of cognitive science.</p>
+      </div>
+      <div class="glass-card f-wide reveal-scale" style="transition-delay:.15s">
+        <div class="spotlight"></div>
+        <div class="feat-icon" style="background:rgba(255,92,122,0.12);border-color:rgba(255,92,122,0.3);color:var(--danger);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+        <h3>Weak Topic Detection</h3>
+        <p>BrainMCQ flags exactly which concepts are slipping, before they cost you marks on exam day.</p>
+      </div>
+      <div class="glass-card reveal-scale" style="transition-delay:.2s">
+        <div class="spotlight"></div>
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>
+        <h3>Exam-Level Questions</h3>
+        <p>Difficulty calibrated to match the real exam you're preparing for, not a watered-down quiz.</p>
+      </div>
+      <div class="glass-card reveal-scale" style="transition-delay:.25s">
+        <div class="spotlight"></div>
+        <div class="feat-icon" style="background:rgba(45,230,196,0.12);border-color:rgba(45,230,196,0.3);color:var(--teal);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+        <h3>Performance Tracking</h3>
+        <p>Accuracy, streaks, and topic mastery, visualized so progress is always visible.</p>
+      </div>
+      <div class="glass-card reveal-scale" style="transition-delay:.3s">
+        <div class="spotlight"></div>
+        <div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 11-3.6-7.2"/><path d="M21 3v6h-6"/></svg></div>
+        <h3>Instant Revision</h3>
+        <p>One-tap regeneration turns any missed question into a fresh, targeted retry.</p>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ AI ENGINE ============ -->
+<section id="ai-engine" class="ai-section">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="eyebrow"><span class="dot"></span>The Engine</div>
+      <h2>Watch your notes<br>become knowledge</h2>
+      <p>A single pipeline reads, understands, questions, and explains — in seconds.</p>
+    </div>
+    <div class="ai-core-wrap reveal-scale" id="aiCoreWrap">
+      <div class="ai-ring r3"></div>
+      <div class="ai-ring r2"></div>
+      <div class="ai-ring r1"></div>
+      <div class="ai-core">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6V12C4 16.5 7.4 20.7 12 22C16.6 20.7 20 16.5 20 12V6L12 2Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12L11 14L15 10" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <!-- particles injected by JS -->
+    </div>
+    <div class="pipeline-stages reveal">
+      <div class="pipeline-stage"><div class="stage-num">01</div><h4>User Notes</h4><p>PDFs, slides, or raw text</p></div>
+      <div class="pipeline-stage"><div class="stage-num">02</div><h4>AI Processing</h4><p>Parsing & concept mapping</p></div>
+      <div class="pipeline-stage"><div class="stage-num">03</div><h4>Question Generation</h4><p>Exam-calibrated MCQs</p></div>
+      <div class="pipeline-stage"><div class="stage-num">04</div><h4>Explanations</h4><p>Reasoning for every option</p></div>
+      <div class="pipeline-stage"><div class="stage-num">05</div><h4>Insights</h4><p>Where to focus next</p></div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ DASHBOARD SHOWCASE ============ -->
+<section id="dashboard">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow"><span class="dot"></span>Your Progress</div>
+      <h2>A dashboard that knows<br>exactly where you stand</h2>
+      <p>Every practice session feeds a live picture of your accuracy, streaks, and mastery.</p>
+    </div>
+    <div class="dash-panel reveal-scale" id="dashPanel">
+      <div class="dash-grid">
+        <div class="stat-card"><div class="stat-label">Accuracy</div><div class="stat-value"><span class="countup" data-target="94">0</span><sub>%</sub></div><div class="stat-trend">↑ 6% this week</div></div>
+        <div class="stat-card"><div class="stat-label">Study Streak</div><div class="stat-value"><span class="countup" data-target="21">0</span><sub>days</sub></div><div class="stat-trend">Personal best</div></div>
+        <div class="stat-card"><div class="stat-label">Topics Mastered</div><div class="stat-value"><span class="countup" data-target="12">0</span><sub>/18</sub></div><div class="stat-trend">↑ 2 this month</div></div>
+        <div class="stat-card"><div class="stat-label">Questions Answered</div><div class="stat-value"><span class="countup" data-target="3480">0</span></div><div class="stat-trend">↑ 240 this week</div></div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-card">
+          <h4>Weekly Accuracy</h4>
+          <div class="bar-chart" id="barChart">
+            <div class="bar" data-h="55"><span>Mon</span></div>
+            <div class="bar" data-h="68"><span>Tue</span></div>
+            <div class="bar" data-h="62"><span>Wed</span></div>
+            <div class="bar" data-h="80"><span>Thu</span></div>
+            <div class="bar" data-h="74"><span>Fri</span></div>
+            <div class="bar" data-h="90"><span>Sat</span></div>
+            <div class="bar" data-h="94"><span>Sun</span></div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h4>Topic Mastery</h4>
+          <div class="topic-row"><span class="t-label">Cell Biology</span><div class="t-bar-bg"><div class="t-bar-fill" data-w="92"></div></div><span class="t-pct">92%</span></div>
+          <div class="topic-row"><span class="t-label">Thermodynamics</span><div class="t-bar-bg"><div class="t-bar-fill" data-w="78"></div></div><span class="t-pct">78%</span></div>
+          <div class="topic-row"><span class="t-label">Organic Chem</span><div class="t-bar-bg"><div class="t-bar-fill" data-w="54"></div></div><span class="t-pct">54%</span></div>
+          <div class="topic-row"><span class="t-label">Genetics</span><div class="t-bar-bg"><div class="t-bar-fill" data-w="88"></div></div><span class="t-pct">88%</span></div>
+        </div>
+      </div>
+      <div class="dash-card" style="margin-top:16px;">
+        <h4>Study Heatmap — Last 91 Days</h4>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ TESTIMONIALS ============ -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="eyebrow"><span class="dot"></span>Loved by Students</div>
+      <h2>Don't just take<br>our word for it</h2>
+    </div>
+  </div>
+  <div class="marquee-wrap reveal">
+    <div class="marquee-track" id="marqueeTrack">
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"I went from re-reading my notes for hours to actually testing myself. My NEET mocks improved within two weeks."</p><div class="t-author"><div class="t-avatar" style="background:var(--grad-primary);">AS</div><div><strong>Aanya Sharma</strong><span>NEET Aspirant</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"The weak topic detection is scary accurate. It found gaps in my Polity prep I didn't even know existed."</p><div class="t-author"><div class="t-avatar" style="background:linear-gradient(135deg,#2de6c4,#3ce0ff);">RK</div><div><strong>Rohit Kumar</strong><span>UPSC Candidate</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"Uploaded my entire DSA notes PDF and had exam-level MCQs in under a minute. Genuinely feels like cheating."</p><div class="t-author"><div class="t-avatar" style="background:linear-gradient(135deg,#ff4fd8,#7c5cfc);">PM</div><div><strong>Priya Mehta</strong><span>CS Engineering Student</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"The explanations are better than my textbook. I finally understand why the wrong options are wrong."</p><div class="t-author"><div class="t-avatar" style="background:linear-gradient(135deg,#ffb454,#ff4fd8);">SV</div><div><strong>Siddharth Verma</strong><span>JEE Aspirant</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"The streak and mastery tracking made revision feel like a game instead of a chore. I actually look forward to it."</p><div class="t-author"><div class="t-avatar" style="background:var(--grad-primary);">AS</div><div><strong>Aanya Sharma</strong><span>NEET Aspirant</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"The weak topic detection is scary accurate. It found gaps in my Polity prep I didn't even know existed."</p><div class="t-author"><div class="t-avatar" style="background:linear-gradient(135deg,#2de6c4,#3ce0ff);">RK</div><div><strong>Rohit Kumar</strong><span>UPSC Candidate</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"Uploaded my entire DSA notes PDF and had exam-level MCQs in under a minute. Genuinely feels like cheating."</p><div class="t-author"><div class="t-avatar" style="background:linear-gradient(135deg,#ff4fd8,#7c5cfc);">PM</div><div><strong>Priya Mehta</strong><span>CS Engineering Student</span></div></div></div>
+      <div class="glass-card t-card"><div class="spotlight"></div><div class="stars">★★★★★</div><p>"The explanations are better than my textbook. I finally understand why the wrong options are wrong."</p><div class="t-author"><div class="t-avatar" style="background:linear-gradient(135deg,#ffb454,#ff4fd8);">SV</div><div><strong>Siddharth Verma</strong><span>JEE Aspirant</span></div></div></div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ PRICING ============ -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="eyebrow"><span class="dot"></span>Pricing</div>
+      <h2>Simple pricing,<br>serious results</h2>
+      <p>Start free. Upgrade when you're ready to go deeper.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="glass-card price-card reveal-scale" style="transition-delay:0s">
+        <div class="spotlight"></div>
+        <h3>Starter</h3><div class="ptag">For trying it out</div>
+        <div class="pamount"><span class="num">₹0</span><span class="per">/ forever</span></div>
+        <ul class="plist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>20 MCQs / month</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>1 PDF upload</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Basic explanations</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Progress dashboard</li>
+        </ul>
+        <button class="btn btn-ghost btn-block magnetic">Get Started</button>
+      </div>
+      <div class="glass-card price-card featured reveal-scale" style="transition-delay:.08s">
+        <div class="spotlight"></div>
+        <span class="pop-badge">Most Popular</span>
+        <h3>Pro</h3><div class="ptag">For serious exam prep</div>
+        <div class="pamount"><span class="num">₹399</span><span class="per">/ month</span></div>
+        <ul class="plist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Unlimited MCQs</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Unlimited PDF uploads</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>AI explanations + weak topic detection</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Exam-level difficulty tuning</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Full analytics & streaks</li>
+        </ul>
+        <button class="btn btn-primary btn-block magnetic">Start Generating</button>
+      </div>
+      <div class="glass-card price-card reveal-scale" style="transition-delay:.16s">
+        <div class="spotlight"></div>
+        <h3>Teams</h3><div class="ptag">For coaching institutes</div>
+        <div class="pamount"><span class="num">₹1499</span><span class="per">/ month</span></div>
+        <ul class="plist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Everything in Pro</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Up to 50 student seats</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Cohort-level analytics</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>Priority support</li>
+        </ul>
+        <button class="btn btn-ghost btn-block magnetic">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ============ FINAL CTA ============ -->
+<section>
+  <div class="container">
+    <div class="final-cta reveal-scale">
+      <div class="aurora-blob" style="width:400px;height:400px;background:#7c5cfc;top:-30%;left:30%;opacity:.4;"></div>
+      <div class="eyebrow"><span class="dot"></span>Ready when you are</div>
+      <h2>Stop re-reading.<br>Start <span class="gradient-text">recalling</span>.</h2>
+      <p>Your next study session could already be turning notes into questions.</p>
+      <button class="btn btn-primary magnetic">Start Generating <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+</section>
+ 
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <span class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6V12C4 16.5 7.4 20.7 12 22C16.6 20.7 20 16.5 20 12V6L12 2Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="rgba(255,255,255,0.15)"/><path d="M9 12L11 14L15 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          BrainMCQ
+        </div>
+        <p>AI-generated, exam-ready MCQs from your own notes. Built for active recall, not passive review.</p>
+        <div class="social-row" style="margin-top:20px;">
+          <a href="#" aria-label="X / Twitter"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+          <a href="#" aria-label="GitHub"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col"><h5>Product</h5><a href="#solution">How it works</a><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#pricing">Pricing</a></div>
+      <div class="footer-col"><h5>Company</h5><a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a><a href="#">Contact</a></div>
+      <div class="footer-col"><h5>Legal</h5><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 BrainMCQ. All rights reserved.</span>
+      <span class="mono">Made for students who recall, not just re-read.</span>
+    </div>
+  </div>
+</footer>
+ 
+<div id="spine"><div class="track"></div><div class="fill" id="spineFill"></div></div>
+ 
+<script>
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ 
+/* ---------- NAV scroll state ---------- */
+const nav = document.getElementById('mainNav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 30);
+}, { passive: true });
+ 
+/* ---------- Cursor glow + parallax aurora + hero tilt ---------- */
+const cursorGlow = document.getElementById('cursorGlow');
+const heroVisual = document.getElementById('heroVisual');
+const auroras = ['auroraA','auroraB','auroraC','auroraD'].map(id => document.getElementById(id));
+let mx = window.innerWidth/2, my = window.innerHeight/2;
+window.addEventListener('mousemove', (e) => {
+  mx = e.clientX; my = e.clientY;
+  cursorGlow.style.transform = `translate(${mx}px, ${my}px) translate(-50%,-50%)`;
+  const nx = (mx/window.innerWidth - 0.5);
+  const ny = (my/window.innerHeight - 0.5);
+  auroras.forEach((el, i) => {
+    if (!el) return;
+    const depth = (i+1) * 10;
+    el.style.transform = `translate(${nx*depth}px, ${ny*depth}px)`;
+  });
+  if (heroVisual) {
+    const rect = heroVisual.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      const rx = ((my - rect.top)/rect.height - 0.5) * -10;
+      const ry = ((mx - rect.left)/rect.width - 0.5) * 14;
+      heroVisual.style.transform = `rotateX(${8+rx}deg) rotateY(${-6+ry}deg)`;
+    }
+  }
+  document.querySelectorAll('.glass-card').forEach(card => {
+    const r = card.getBoundingClientRect();
+    if (mx > r.left-40 && mx < r.right+40 && my > r.top-40 && my < r.bottom+40) {
+      card.style.setProperty('--mx', (mx - r.left) + 'px');
+      card.style.setProperty('--my', (my - r.top) + 'px');
+    }
+  });
+}, { passive: true });
+ 
+/* ---------- Magnetic buttons ---------- */
+document.querySelectorAll('.magnetic').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const r = btn.getBoundingClientRect();
+    const x = e.clientX - r.left - r.width/2;
+    const y = e.clientY - r.top - r.height/2;
+    btn.style.transform = `translate(${x*0.28}px, ${y*0.45}px)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+});
+ 
+/* ---------- Scroll reveal via IntersectionObserver ---------- */
+const revealEls = document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in-view');
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+revealEls.forEach(el => io.observe(el));
+ 
+/* ---------- Watch Demo -> smooth scroll to AI engine ---------- */
+document.getElementById('watchDemoBtn').addEventListener('click', () => {
+  document.getElementById('ai-engine').scrollIntoView({ behavior:'smooth', block:'start' });
+});
+ 
+/* ---------- Particle canvas background ---------- */
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+}
+function initParticles(){
+  const count = Math.min(70, Math.floor(window.innerWidth/22));
+  particles = Array.from({length: count}, () => ({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*1.6 + 0.4,
+    speedY: Math.random()*0.25 + 0.05,
+    drift: Math.random()*0.3 - 0.15,
+    alpha: Math.random()*0.5 + 0.15,
+    hue: Math.random() > 0.5 ? '124,92,252' : '60,224,255'
+  }));
+}
+resizeCanvas(); initParticles();
+window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+function drawParticles(){
+  if (!reduceMotion) {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p => {
+      p.y -= p.speedY;
+      p.x += p.drift;
+      if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random()*canvas.width; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${p.hue},${p.alpha})`;
+      ctx.shadowColor = `rgba(${p.hue},0.8)`;
+      ctx.shadowBlur = 6;
+      ctx.fill();
+    });
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resizeCanvas, 300); });
+ 
+/* ---------- Solution timeline: scroll-driven progress line + active nodes (vanilla) ---------- */
+const tNodes = document.querySelectorAll('[data-tnode]');
+const tProgress = document.getElementById('timelineProgress');
+const timelineTrack = document.getElementById('timelineTrack');
+function updateTimelineProgress(){
+  if (!timelineTrack) return;
+  const r = timelineTrack.getBoundingClientRect();
+  const start = window.innerHeight * 0.78;
+  const end = window.innerHeight * 0.32;
+  let progress = (start - r.top) / (start - end);
+  progress = Math.min(1, Math.max(0, progress));
+  tProgress.setAttribute('x2', progress * 1000);
+  const activeCount = Math.floor(progress * tNodes.length + 0.35);
+  tNodes.forEach((n,i) => n.classList.toggle('active', i < activeCount));
+}
+window.addEventListener('scroll', updateTimelineProgress, { passive:true });
+window.addEventListener('resize', updateTimelineProgress);
+updateTimelineProgress();
+ 
+/* ---------- AI core: orbiting particles along pipeline (vanilla rAF) ---------- */
+const aiWrap = document.getElementById('aiCoreWrap');
+if (aiWrap) {
+  const orbitParticles = [];
+  for (let i=0;i<10;i++){
+    const p = document.createElement('div');
+    p.className = 'pipeline-particle';
+    p.style.left = '50%'; p.style.top = '50%';
+    aiWrap.appendChild(p);
+    orbitParticles.push({
+      el: p,
+      radius: 120 + (i%3)*60,
+      speed: (0.15 + Math.random()*0.12) * (i % 2 === 0 ? 1 : -1),
+      offset: Math.random()*Math.PI*2
+    });
+  }
+  function animateOrbit(time){
+    if (!reduceMotion) {
+      orbitParticles.forEach(o => {
+        const t = (time*0.001*o.speed) + o.offset;
+        const x = Math.cos(t) * o.radius;
+        const y = Math.sin(t) * o.radius * 0.92;
+        o.el.style.transform = `translate(${x}px,${y}px)`;
+        o.el.style.opacity = 0.4 + Math.sin(t*2)*0.3;
+      });
+    }
+    requestAnimationFrame(animateOrbit);
+  }
+  requestAnimationFrame(animateOrbit);
+}
+ 
+/* ---------- Dashboard: count-up, bar chart, topic bars, heatmap ---------- */
+function animateCountUp(el){
+  const target = parseInt(el.dataset.target, 10);
+  const dur = 1600;
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min((now-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.floor(eased * target).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = target.toLocaleString();
+  }
+  requestAnimationFrame(tick);
+}
+const dashPanel = document.getElementById('dashPanel');
+if (dashPanel) {
+  const dashIO = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        document.querySelectorAll('.countup').forEach(animateCountUp);
+        document.querySelectorAll('.bar-chart .bar').forEach(bar => {
+          bar.style.height = bar.dataset.h + '%';
+        });
+        document.querySelectorAll('.t-bar-fill').forEach(fill => {
+          fill.style.width = fill.dataset.w + '%';
+        });
+        dashIO.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  dashIO.observe(dashPanel);
+}
+/* heatmap generation */
+const heatmap = document.getElementById('heatmap');
+if (heatmap) {
+  for (let i=0;i<91;i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.style.setProperty('--lvl', Math.floor(Math.random()*5));
+    heatmap.appendChild(cell);
+  }
+}
+ 
+/* ---------- Spine: signature element (synapse trace) ---------- */
+const spine = document.getElementById('spine');
+const spineFill = document.getElementById('spineFill');
+if (spine) {
+  const sections = ['problem','solution','features','ai-engine','dashboard','testimonials','pricing'];
+  sections.forEach(id => {
+    const target = document.getElementById(id);
+    if (!target) return;
+    const node = document.createElement('div');
+    node.className = 'node';
+    node.dataset.section = id;
+    spine.appendChild(node);
+  });
+  function layoutNodes(){
+    const docH = document.body.scrollHeight - window.innerHeight;
+    sections.forEach(id => {
+      const target = document.getElementById(id);
+      const node = spine.querySelector(`[data-section="${id}"]`);
+      if (!target || !node) return;
+      const top = target.offsetTop;
+      const pct = Math.min(100, Math.max(0,(top/docH)*100));
+      node.style.top = pct + '%';
+    });
+  }
+  layoutNodes();
+  window.addEventListener('resize', layoutNodes);
+  window.addEventListener('scroll', () => {
+    const docH = document.body.scrollHeight - window.innerHeight;
+    const pct = Math.min(100,(window.scrollY/docH)*100);
+    spineFill.style.height = pct + '%';
+    spine.querySelectorAll('.node').forEach(node => {
+      const nodeTop = parseFloat(node.style.top);
+      node.classList.toggle('active', pct >= nodeTop - 1);
+    });
+  }, { passive:true });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASAPMCQ — Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-void:#03040A;--bg-deep:#060814;--bg-surface:#0D1020;--bg-surface-2:#11152A;
+  --violet:#8B5CF6;--violet-bright:#A78BFA;--cyan:#22D3EE;--teal:#14F195;
+  --magenta:#FF4FD8;--amber:#FFB454;--red:#FF5370;
+  --text-primary:#F8FAFC;--text-secondary:#A1A8C5;--text-tertiary:#5D6280;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg-void);color:var(--text-primary);font-family:'Inter',sans-serif;overflow-x:hidden;height:100%;}
+::selection{background:var(--violet);color:#fff;}
+
+/* ── BACKGROUNDS ── */
+.bg-gradient{position:fixed;inset:0;z-index:-6;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(139,92,246,.2),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(34,211,238,.08),transparent 60%),linear-gradient(180deg,var(--bg-void),var(--bg-deep) 50%,var(--bg-void));}
+#stars{position:fixed;inset:0;z-index:-5;}
+.nebula{position:fixed;inset:0;z-index:-4;background:radial-gradient(ellipse 50% 35% at 20% 30%,rgba(139,92,246,.09),transparent 70%),radial-gradient(ellipse 45% 30% at 85% 60%,rgba(255,79,216,.05),transparent 70%);animation:nebulaDrift 40s ease-in-out infinite alternate;filter:blur(40px);}
+@keyframes nebulaDrift{0%{transform:translate(0,0) scale(1);}100%{transform:translate(3%,-2%) scale(1.08);}}
+.grid-fade{position:fixed;inset:0;z-index:-3;background-image:linear-gradient(rgba(248,250,252,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(248,250,252,.018) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 70%);}
+
+/* ── NAVBAR ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(6,8,20,.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(248,250,252,.07);}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.02em;background:linear-gradient(90deg,#fff,#C4B5FD);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.nav-center{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-tertiary);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-btn{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .2s;}
+.nav-btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid rgba(248,250,252,.1);}
+.nav-btn-ghost:hover{color:var(--text-primary);border-color:rgba(248,250,252,.25);}
+.nav-btn-danger{background:rgba(255,83,112,.1);color:#FF5370;border:1px solid rgba(255,83,112,.3);}
+.nav-btn-danger:hover{background:rgba(255,83,112,.18);}
+
+/* ── QUIZ LAYOUT ── */
+.quiz-layout{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  grid-template-rows:1fr auto;
+  min-height:100vh;
+  padding-top:57px;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  grid-row:1/3;
+  border-right:1px solid rgba(248,250,252,.07);
+  background:rgba(6,8,20,.4);
+  backdrop-filter:blur(12px);
+  padding:24px 20px;
+  overflow-y:auto;
+  display:flex;flex-direction:column;gap:22px;
+  position:sticky;top:57px;height:calc(100vh - 57px);
+}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:4px;}
+
+.side-section{border-radius:14px;background:rgba(17,21,42,.7);border:1px solid rgba(248,250,252,.07);padding:16px;}
+.side-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.side-label::before{content:'';width:12px;height:1px;background:var(--text-tertiary);}
+
+/* progress */
+.progress-nums{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.progress-current{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:var(--violet-bright);}
+.progress-total{font-size:14px;color:var(--text-tertiary);}
+.progress-bar-wrap{height:5px;border-radius:4px;background:rgba(248,250,252,.08);overflow:hidden;}
+.progress-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .5s ease;}
+.progress-sub{font-size:12px;color:var(--text-tertiary);margin-top:7px;}
+
+/* timer */
+.timer-display{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:500;
+  color:var(--text-primary);letter-spacing:.05em;
+}
+.timer-display.warn{color:var(--amber);animation:timerWarn 1s ease-in-out infinite;}
+.timer-display.danger{color:var(--red);animation:timerWarn .5s ease-in-out infinite;}
+@keyframes timerWarn{0%,100%{opacity:1;}50%{opacity:.5;}}
+.timer-colon{animation:blink 1s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+/* navigator */
+.nav-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+.nav-cell{
+  aspect-ratio:1;border-radius:7px;border:1px solid rgba(248,250,252,.1);
+  background:rgba(17,21,42,.5);color:var(--text-tertiary);
+  font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .18s;position:relative;
+}
+.nav-cell:hover{border-color:rgba(139,92,246,.5);color:var(--text-primary);}
+.nav-cell.answered{background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.45);color:var(--violet-bright);}
+.nav-cell.marked{background:rgba(255,180,84,.1);border-color:rgba(255,180,84,.4);color:var(--amber);}
+.nav-cell.marked::after{content:'★';position:absolute;top:-4px;right:-3px;font-size:8px;color:var(--amber);}
+.nav-cell.current{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 8px rgba(34,211,238,.3);}
+.nav-cell.correct{background:rgba(20,241,149,.15);border-color:rgba(20,241,149,.5);color:var(--teal);}
+.nav-cell.incorrect{background:rgba(255,83,112,.15);border-color:rgba(255,83,112,.5);color:var(--red);}
+.nav-cell.skipped{background:rgba(255,180,84,.08);border-color:rgba(255,180,84,.25);color:var(--amber);}
+
+/* legend */
+.nav-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-tertiary);}
+.leg-dot{width:7px;height:7px;border-radius:3px;}
+
+/* mark for review */
+.mark-btn{
+  width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,180,84,.3);
+  background:rgba(255,180,84,.06);color:var(--amber);
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:all .2s;
+}
+.mark-btn:hover{background:rgba(255,180,84,.12);border-color:rgba(255,180,84,.5);}
+.mark-btn.marked-active{background:rgba(255,180,84,.18);border-color:rgba(255,180,84,.6);}
+
+/* current score */
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.score-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;}
+.score-val.correct{color:var(--teal);}
+.acc-bar-wrap{height:4px;border-radius:4px;background:rgba(248,250,252,.08);overflow:hidden;margin-top:6px;}
+.acc-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--cyan));transition:width .5s;}
+
+/* ── MAIN AREA ── */
+.main-area{
+  padding:36px 40px 24px;
+  display:flex;flex-direction:column;
+  min-height:calc(100vh - 57px);
+}
+
+/* question header */
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.q-label{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-tertiary);}
+.q-topic{
+  padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;
+  background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);color:var(--violet-bright);
+}
+
+/* question body */
+.q-body{
+  border-radius:18px;border:1px solid rgba(248,250,252,.08);
+  background:rgba(13,16,32,.6);backdrop-filter:blur(20px);
+  padding:32px;flex:1;
+}
+.q-text{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;
+  font-size:clamp(17px,2.2vw,22px);line-height:1.4;
+  color:var(--text-primary);margin-bottom:28px;
+}
+
+/* options */
+.options{display:flex;flex-direction:column;gap:12px;}
+.option{
+  display:flex;align-items:center;gap:14px;
+  padding:15px 18px;border-radius:12px;
+  border:1px solid rgba(248,250,252,.08);
+  background:rgba(17,21,42,.5);
+  cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.option::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;background:radial-gradient(circle at 20% 50%,rgba(139,92,246,.15),transparent 70%);}
+.option:hover{border-color:rgba(139,92,246,.4);background:rgba(139,92,246,.07);}
+.option:hover::before{opacity:1;}
+.option.selected{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.12);}
+.option.selected::before{opacity:1;}
+.option.correct-ans{border-color:rgba(20,241,149,.6);background:rgba(20,241,149,.1);}
+.option.wrong-ans{border-color:rgba(255,83,112,.5);background:rgba(255,83,112,.08);}
+.option.show-correct{border-color:rgba(20,241,149,.6);background:rgba(20,241,149,.08);}
+
+.opt-letter{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;
+  border:1.5px solid rgba(248,250,252,.15);background:rgba(17,21,42,.8);
+  color:var(--text-secondary);transition:all .2s;
+}
+.option.selected .opt-letter{background:var(--violet);border-color:var(--violet-bright);color:#fff;}
+.option.correct-ans .opt-letter{background:var(--teal);border-color:var(--teal);color:var(--bg-void);}
+.option.wrong-ans .opt-letter{background:rgba(255,83,112,.3);border-color:var(--red);color:var(--red);}
+.option.show-correct .opt-letter{background:rgba(20,241,149,.2);border-color:var(--teal);color:var(--teal);}
+
+.opt-text{font-size:15px;color:var(--text-primary);line-height:1.45;flex:1;}
+.opt-icon{font-size:16px;flex-shrink:0;opacity:0;transition:opacity .2s;}
+.option.correct-ans .opt-icon,.option.show-correct .opt-icon{opacity:1;}
+.option.wrong-ans .opt-icon{opacity:1;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  grid-column:2;
+  padding:18px 40px;
+  border-top:1px solid rgba(248,250,252,.07);
+  background:rgba(6,8,20,.5);backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+}
+.nav-pair{display:flex;gap:10px;}
+.quiz-btn{
+  padding:11px 24px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;border:none;
+  display:flex;align-items:center;gap:8px;transition:all .22s;
+}
+.btn-prev{background:transparent;color:var(--text-secondary);border:1px solid rgba(248,250,252,.1);}
+.btn-prev:hover:not(:disabled){color:var(--text-primary);border-color:rgba(248,250,252,.28);}
+.btn-prev:disabled{opacity:.3;cursor:not-allowed;}
+.btn-next{background:linear-gradient(135deg,var(--violet),#7C3AED);color:#fff;}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 8px 24px -6px rgba(139,92,246,.65);}
+.btn-submit{background:linear-gradient(135deg,var(--teal),#0EA572);color:var(--bg-void);font-weight:700;}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 24px -6px rgba(20,241,149,.5);}
+
+.bottom-hint{font-size:12px;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;}
+
+/* ── RESULTS VIEW ── */
+#resultsView{display:none;min-height:100vh;padding:80px 24px 60px;align-items:center;justify-content:center;flex-direction:column;}
+#resultsView.show{display:flex;}
+
+.results-card{
+  width:min(760px,100%);border-radius:24px;
+  border:1px solid rgba(248,250,252,.08);
+  background:rgba(13,16,32,.7);backdrop-filter:blur(28px);
+  box-shadow:0 50px 120px -30px rgba(0,0,0,.8),0 0 0 1px rgba(139,92,246,.06) inset;
+  overflow:hidden;
+  animation:fadeUp .6s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.res-top{
+  padding:36px 36px 28px;text-align:center;
+  background:linear-gradient(180deg,rgba(139,92,246,.07),transparent);
+  border-bottom:1px solid rgba(248,250,252,.06);
+}
+.res-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.08);color:var(--violet-bright);font-size:12px;font-weight:600;margin-bottom:16px;}
+.res-score-big{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(3rem,8vw,5.5rem);line-height:1;letter-spacing:-.04em;margin-bottom:6px;}
+.res-score-label{font-size:14px;color:var(--text-tertiary);}
+.res-grade{display:inline-block;margin-top:14px;padding:6px 18px;border-radius:999px;font-size:14px;font-weight:700;letter-spacing:.04em;}
+.grade-s{background:rgba(20,241,149,.12);border:1px solid rgba(20,241,149,.35);color:var(--teal);}
+.grade-a{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:var(--cyan);}
+.grade-b{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);color:var(--violet-bright);}
+.grade-c{background:rgba(255,180,84,.1);border:1px solid rgba(255,180,84,.3);color:var(--amber);}
+.grade-f{background:rgba(255,83,112,.1);border:1px solid rgba(255,83,112,.3);color:var(--red);}
+
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid rgba(248,250,252,.06);}
+.res-stat{padding:20px;text-align:center;border-right:1px solid rgba(248,250,252,.06);}
+.res-stat:last-child{border-right:none;}
+.res-stat-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;margin-bottom:4px;}
+.res-stat-lbl{font-size:12px;color:var(--text-tertiary);}
+
+.res-body{padding:28px 36px;}
+.res-section{margin-bottom:22px;}
+.res-sec-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.res-sec-title::before{content:'';width:14px;height:1px;background:var(--text-tertiary);}
+
+.topic-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.topic-tag{padding:6px 14px;border-radius:9px;font-size:13px;font-weight:500;}
+.tag-weak{background:rgba(255,83,112,.1);border:1px solid rgba(255,83,112,.25);color:var(--red);}
+.tag-strong{background:rgba(20,241,149,.08);border:1px solid rgba(20,241,149,.2);color:var(--teal);}
+
+.res-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px;}
+.res-btn{
+  width:100%;padding:13px;border-radius:12px;font-family:'Inter',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;border:none;
+  display:flex;align-items:center;justify-content:center;gap:9px;transition:all .22s;
+}
+.res-btn-primary{background:linear-gradient(135deg,var(--violet),#7C3AED);color:#fff;}
+.res-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px -6px rgba(139,92,246,.6);}
+.res-btn-ghost{background:rgba(17,21,42,.8);color:var(--text-secondary);border:1px solid rgba(248,250,252,.1);}
+.res-btn-ghost:hover{color:var(--text-primary);border-color:rgba(248,250,252,.25);}
+
+/* ── REVIEW OVERLAY ── */
+#reviewOverlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(3,4,10,.9);backdrop-filter:blur(18px);
+  align-items:center;justify-content:center;padding:24px;
+  animation:fadeIn .3s ease;
+}
+#reviewOverlay.show{display:flex;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+.review-card{
+  width:min(700px,100%);max-height:85vh;overflow-y:auto;
+  border-radius:20px;border:1px solid rgba(248,250,252,.1);
+  background:rgba(13,16,32,.95);
+  box-shadow:0 40px 100px -20px rgba(0,0,0,.9);
+  animation:scaleIn .3s ease;
+}
+@keyframes scaleIn{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+.review-card::-webkit-scrollbar{width:4px;}
+.review-card::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:4px;}
+
+.review-header{
+  padding:22px 24px;border-bottom:1px solid rgba(248,250,252,.07);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:rgba(13,16,32,.97);z-index:1;
+}
+.review-qnum{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-tertiary);}
+.review-close{width:32px;height:32px;border-radius:8px;border:1px solid rgba(248,250,252,.12);background:transparent;color:var(--text-secondary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.review-close:hover{background:rgba(248,250,252,.07);color:var(--text-primary);}
+
+.review-body{padding:24px;}
+.review-question{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;
+  line-height:1.45;margin-bottom:22px;color:var(--text-primary);
+}
+.review-options{display:flex;flex-direction:column;gap:10px;margin-bottom:26px;}
+.rev-opt{
+  padding:12px 16px;border-radius:10px;border:1px solid rgba(248,250,252,.07);
+  background:rgba(17,21,42,.5);display:flex;align-items:flex-start;gap:12px;
+}
+.rev-opt.rev-correct{border-color:rgba(20,241,149,.45);background:rgba(20,241,149,.07);}
+.rev-opt.rev-wrong{border-color:rgba(255,83,112,.4);background:rgba(255,83,112,.06);}
+.rev-opt.rev-missed{border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.05);}
+.rev-letter{
+  width:26px;height:26px;flex-shrink:0;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;border:1px solid rgba(248,250,252,.12);
+  color:var(--text-secondary);background:rgba(17,21,42,.8);
+}
+.rev-opt.rev-correct .rev-letter{background:var(--teal);border-color:var(--teal);color:var(--bg-void);}
+.rev-opt.rev-wrong .rev-letter{background:rgba(255,83,112,.3);border-color:var(--red);color:var(--red);}
+.rev-opt.rev-missed .rev-letter{background:rgba(139,92,246,.25);border-color:var(--violet-bright);color:var(--violet-bright);}
+.rev-opt-text{font-size:14px;color:var(--text-secondary);line-height:1.45;flex:1;}
+.rev-opt.rev-correct .rev-opt-text{color:var(--text-primary);}
+
+.review-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.3),rgba(34,211,238,.2),transparent);margin:22px 0;}
+
+.explain-box{border-radius:14px;border:1px solid rgba(139,92,246,.25);background:rgba(139,92,246,.06);padding:18px 20px;margin-bottom:16px;}
+.explain-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--violet-bright);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.explain-text{font-size:14px;color:var(--text-secondary);line-height:1.65;}
+.explain-text strong{color:var(--text-primary);font-weight:600;}
+
+.why-list{display:flex;flex-direction:column;gap:10px;}
+.why-item{
+  padding:12px 16px;border-radius:10px;
+  background:rgba(17,21,42,.6);border:1px solid rgba(248,250,252,.06);
+}
+.why-item-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px;font-weight:700;}
+.why-correct-head{color:var(--teal);}
+.why-wrong-head{color:var(--red);}
+.why-item-text{font-size:13px;color:var(--text-tertiary);line-height:1.55;}
+
+/* ── SUBMIT CONFIRM ── */
+#confirmModal{display:none;position:fixed;inset:0;z-index:300;background:rgba(3,4,10,.88);backdrop-filter:blur(12px);align-items:center;justify-content:center;}
+#confirmModal.show{display:flex;}
+.confirm-card{width:min(420px,92vw);border-radius:18px;border:1px solid rgba(248,250,252,.1);background:rgba(13,16,32,.98);padding:32px;text-align:center;animation:scaleIn .25s ease;}
+.confirm-icon{font-size:40px;margin-bottom:14px;}
+.confirm-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;margin-bottom:8px;}
+.confirm-sub{font-size:14px;color:var(--text-secondary);line-height:1.55;margin-bottom:24px;}
+.confirm-actions{display:flex;gap:10px;}
+.confirm-cancel{flex:1;padding:11px;border-radius:10px;background:transparent;color:var(--text-secondary);border:1px solid rgba(248,250,252,.1);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.confirm-cancel:hover{color:var(--text-primary);border-color:rgba(248,250,252,.25);}
+.confirm-submit{flex:1;padding:11px;border-radius:10px;background:linear-gradient(135deg,var(--teal),#0EA572);color:var(--bg-void);border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.confirm-submit:hover{transform:translateY(-1px);box-shadow:0 6px 18px -6px rgba(20,241,149,.5);}
+
+/* ── GRADIENT TEXT ── */
+.gradient-text{background:linear-gradient(90deg,var(--violet-bright),var(--cyan),var(--teal),var(--violet-bright));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradientShift 6s ease infinite;}
+@keyframes gradientShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+
+/* ── CURSOR ── */
+#cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.9),transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;}
+#cursor-glow{position:fixed;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.09),transparent 70%);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);filter:blur(8px);}
+
+@media(max-width:768px){
+  .quiz-layout{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .main-area{padding:20px 16px 16px;}
+  .bottom-nav{grid-column:1;padding:14px 16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<canvas id="stars"></canvas>
+<div class="nebula"></div>
+<div class="grid-fade"></div>
+<div id="cursor"></div>
+<div id="cursor-glow"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">ASAPMCQ</div>
+  <div class="nav-center" id="navCenter">Database Management · 25 Questions</div>
+  <div class="nav-right">
+    <button class="nav-btn nav-btn-ghost" onclick="showConfirm()">⚑ Submit</button>
+    <button class="nav-btn nav-btn-danger" onclick="if(confirm('Exit quiz? Progress will be lost.'))location.reload()">✕ Exit</button>
+  </div>
+</nav>
+
+<!-- QUIZ VIEW -->
+<div class="quiz-layout" id="quizView">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Progress -->
+    <div class="side-section">
+      <div class="side-label">Progress</div>
+      <div class="progress-nums">
+        <span class="progress-current" id="sideProg">1</span>
+        <span class="progress-total">/ 25</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="sideProgBar" style="width:4%"></div></div>
+      <div class="progress-sub" id="sideProgSub">0 answered · 25 remaining</div>
+    </div>
+
+    <!-- Timer -->
+    <div class="side-section">
+      <div class="side-label">Time Remaining</div>
+      <div class="timer-display" id="timerDisplay">
+        <span id="timerM">45</span><span class="timer-colon">:</span><span id="timerS">00</span>
+      </div>
+    </div>
+
+    <!-- Question Navigator -->
+    <div class="side-section">
+      <div class="side-label">Navigator</div>
+      <div class="nav-grid" id="navGrid"></div>
+      <div class="nav-legend">
+        <div class="leg"><div class="leg-dot" style="background:rgba(139,92,246,.6)"></div>Answered</div>
+        <div class="leg"><div class="leg-dot" style="background:rgba(255,180,84,.5)"></div>Marked</div>
+        <div class="leg"><div class="leg-dot" style="background:rgba(34,211,238,.6)"></div>Current</div>
+        <div class="leg"><div class="leg-dot" style="background:rgba(248,250,252,.15)"></div>Skipped</div>
+      </div>
+    </div>
+
+    <!-- Mark for Review -->
+    <button class="mark-btn" id="markBtn" onclick="toggleMark()">
+      <span>★</span> <span id="markBtnText">Mark for Review</span>
+    </button>
+
+
+
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-area">
+    <div class="q-header">
+      <div class="q-label" id="qLabel">Question 1 of 25</div>
+      <div class="q-topic" id="qTopic">Databases</div>
+    </div>
+    <div class="q-body">
+      <div class="q-text" id="qText">Loading…</div>
+      <div class="options" id="optionsEl"></div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="quiz-btn btn-prev" id="btnPrev" onclick="goTo(currentQ-1)" disabled>← Previous</button>
+    <div class="bottom-hint" id="bottomHint">Select an answer to continue</div>
+    <div class="nav-pair">
+      <button class="quiz-btn btn-next" id="btnNext" onclick="goTo(currentQ+1)">Next →</button>
+      <button class="quiz-btn btn-submit" id="btnSubmit" style="display:none" onclick="showConfirm()">Submit Quiz ✓</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- RESULTS VIEW -->
+<div id="resultsView">
+  <div class="results-card">
+    <div class="res-top">
+      <div class="res-badge">✦ Quiz Complete</div>
+      <div class="res-score-big gradient-text" id="resBigScore">18 / 25</div>
+      <div class="res-score-label">Final Score</div>
+      <div class="res-grade" id="resGrade">B</div>
+    </div>
+    <div class="res-stats">
+      <div class="res-stat">
+        <div class="res-stat-val" style="color:var(--teal)" id="resAccuracy">72%</div>
+        <div class="res-stat-lbl">Accuracy</div>
+      </div>
+      <div class="res-stat">
+        <div class="res-stat-val" style="color:var(--amber)" id="resTime">—</div>
+        <div class="res-stat-lbl">Time Used</div>
+      </div>
+      <div class="res-stat">
+        <div class="res-stat-val" style="color:var(--red)" id="resSkipped">0</div>
+        <div class="res-stat-lbl">Skipped</div>
+      </div>
+    </div>
+    <div class="res-body">
+      <div class="res-section">
+        <div class="res-sec-title">Weak Topics</div>
+        <div class="topic-tags" id="weakTopics"></div>
+      </div>
+      <div class="res-section">
+        <div class="res-sec-title">Strong Topics</div>
+        <div class="topic-tags" id="strongTopics"></div>
+      </div>
+      <div class="res-actions">
+        <button class="res-btn res-btn-primary" onclick="showReviewList()">📋 Review Incorrect Questions</button>
+        <button class="res-btn res-btn-ghost" onclick="location.reload()">↺ Restart Quiz</button>
+        <button class="res-btn res-btn-ghost" onclick="location.href='generator.html'">⌂ Dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW OVERLAY -->
+<div id="reviewOverlay" onclick="e=>e.target===this&&closeReview()">
+  <div class="review-card" id="reviewCard">
+    <div class="review-header">
+      <div class="review-qnum" id="revQNum">Question 1</div>
+      <button class="review-close" onclick="closeReview()">✕</button>
+    </div>
+    <div class="review-body">
+      <div class="review-question" id="revQuestion"></div>
+      <div class="review-options" id="revOptions"></div>
+      <div class="review-divider"></div>
+
+      <div class="explain-box">
+        <div class="explain-title">💡 Explanation</div>
+        <div class="explain-text" id="revExplain"></div>
+      </div>
+
+      <div class="why-list" id="revWhyList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT CONFIRM MODAL -->
+<div id="confirmModal">
+  <div class="confirm-card">
+    <div class="confirm-icon">📤</div>
+    <div class="confirm-title">Submit Quiz?</div>
+    <div class="confirm-sub" id="confirmSub">You have answered 0 of 25 questions. Unanswered questions will be marked incorrect.</div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="document.getElementById('confirmModal').classList.remove('show')">Keep Going</button>
+      <button class="confirm-submit" onclick="submitQuiz()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   QUIZ DATA  (25 questions, 5 topics)
+   ════════════════════════════════════ */
+const QUESTIONS = [
+  { topic:"Databases", q:"What is Normalization in database design?", opts:["A process to speed up queries by adding indexes","A method to reduce data redundancy and improve data integrity by organizing data into related tables","A technique to encrypt sensitive data before storage","A way to back up database tables automatically"], ans:1,
+    explain:"Normalization is the process of organizing a relational database to reduce redundancy and dependency. It involves dividing large tables into smaller ones and defining relationships between them.",
+    why:["A – Indexes are a separate performance technique unrelated to normalization.","B – Correct. Normalization eliminates redundancy and ensures data integrity through structured decomposition.","C – Encryption is a security concern, separate from schema design.","D – Backups are operational tasks, not related to schema normalization."]},
+  { topic:"Databases", q:"Which SQL keyword is used to remove duplicate rows from a result set?", opts:["UNIQUE","DISTINCT","FILTER","DEDUPE"], ans:1,
+    explain:"The DISTINCT keyword in SQL filters the result set to return only unique rows, eliminating duplicates across all selected columns.",
+    why:["A – UNIQUE is a constraint applied to columns, not a query clause for removing duplicates.","B – Correct. SELECT DISTINCT returns only unique combinations of the selected columns.","C – FILTER is used with aggregate functions, not for deduplication.","D – DEDUPE is not a valid SQL keyword."]},
+  { topic:"Databases", q:"What does ACID stand for in database transactions?", opts:["Atomicity, Consistency, Isolation, Durability","Access, Control, Integrity, Data","Autonomy, Consistency, Index, Dependency","Atomicity, Concurrency, Integrity, Distribution"], ans:0,
+    explain:"ACID is a set of properties that guarantee reliable processing of database transactions: Atomicity (all-or-nothing), Consistency (valid state), Isolation (concurrent transactions don't interfere), Durability (committed data persists).",
+    why:["A – Correct. ACID stands for Atomicity, Consistency, Isolation, and Durability.","B – Access, Control, Integrity, Data is fabricated and not a real acronym.","C – Autonomy and Dependency are not part of transaction properties.","D – Concurrency is a concern addressed by Isolation, not a separate property."]},
+  { topic:"Databases", q:"Which normal form eliminates transitive dependencies?", opts:["First Normal Form (1NF)","Second Normal Form (2NF)","Third Normal Form (3NF)","Boyce-Codd Normal Form (BCNF)"], ans:2,
+    explain:"Third Normal Form (3NF) requires that every non-key attribute is non-transitively dependent on the primary key — meaning no non-key column should depend on another non-key column.",
+    why:["A – 1NF ensures atomicity of columns (no repeating groups).","B – 2NF eliminates partial dependencies on composite primary keys.","C – Correct. 3NF removes transitive dependencies between non-prime attributes.","D – BCNF is a stricter version of 3NF addressing certain anomalies 3NF doesn't."]},
+  { topic:"Databases", q:"What is a Foreign Key?", opts:["A key that encrypts database records","A primary key stored in an external file","A column that references the primary key of another table","A key used only in NoSQL databases"], ans:2,
+    explain:"A foreign key is a column (or set of columns) in a table that establishes a link between data in two tables — it references the primary key of another table, enforcing referential integrity.",
+    why:["A – Encryption keys are unrelated to relational database design.","B – Primary keys reside within their own table, not external files.","C – Correct. A foreign key creates a referential constraint linking two tables.","D – Foreign keys are a concept in relational (SQL) databases, not NoSQL."]},
+
+  { topic:"Data Structures", q:"What is the time complexity of binary search on a sorted array?", opts:["O(n)","O(n²)","O(log n)","O(1)"], ans:2,
+    explain:"Binary search repeatedly halves the search space, giving O(log n) time complexity. Each comparison eliminates half of the remaining elements.",
+    why:["A – O(n) is linear search, which checks every element.","B – O(n²) is typical of nested loops like bubble sort.","C – Correct. Binary search divides the problem in half each step: O(log n).","D – O(1) would mean instant access regardless of size, like a hash table lookup."]},
+  { topic:"Data Structures", q:"Which data structure uses LIFO (Last In, First Out) ordering?", opts:["Queue","Stack","Linked List","Heap"], ans:1,
+    explain:"A Stack follows the LIFO principle — the last element pushed onto the stack is the first one to be popped. Common uses: function call stacks, undo operations, expression parsing.",
+    why:["A – Queue uses FIFO (First In, First Out), not LIFO.","B – Correct. Stack is the classic LIFO data structure.","C – Linked List has no inherent ordering constraint — access depends on traversal.","D – Heap is a priority-based structure (min/max), not LIFO."]},
+  { topic:"Data Structures", q:"What is the worst-case time complexity of QuickSort?", opts:["O(n log n)","O(n)","O(n²)","O(log n)"], ans:2,
+    explain:"QuickSort's worst case occurs when the pivot is always the smallest or largest element (e.g., sorted array with naive pivot selection), leading to O(n²) comparisons. Average case is O(n log n).",
+    why:["A – O(n log n) is QuickSort's average case, not worst case.","B – O(n) is not achievable for comparison-based sorting.","C – Correct. Worst case is O(n²) due to degenerate pivot selection.","D – O(log n) is the complexity of binary search, not sorting."]},
+  { topic:"Data Structures", q:"In a min-heap, where is the smallest element stored?", opts:["At a leaf node","At an arbitrary position","At the root","At the last position"], ans:2,
+    explain:"A min-heap property guarantees that every parent node is smaller than or equal to its children. Therefore the minimum element is always at the root of the heap.",
+    why:["A – Leaf nodes contain larger elements in a min-heap.","B – The smallest element always has a defined position in a heap.","C – Correct. The root always holds the minimum value in a min-heap.","D – The last position typically holds a larger value inserted during heap operations."]},
+  { topic:"Data Structures", q:"Which traversal of a Binary Search Tree produces elements in sorted order?", opts:["Pre-order","Post-order","In-order","Level-order"], ans:2,
+    explain:"In-order traversal (Left → Root → Right) of a Binary Search Tree visits nodes in ascending sorted order, because the BST property ensures left < root < right at every node.",
+    why:["A – Pre-order (Root → Left → Right) produces a serialized tree structure, not sorted order.","B – Post-order (Left → Right → Root) is used for deletion/expression evaluation.","C – Correct. In-order traversal of a BST yields a sorted sequence.","D – Level-order (BFS) processes nodes level by level, not in sorted key order."]},
+
+  { topic:"Algorithms", q:"What algorithm paradigm does Merge Sort use?", opts:["Greedy","Dynamic Programming","Divide and Conquer","Backtracking"], ans:2,
+    explain:"Merge Sort uses Divide and Conquer: it recursively splits the array into halves (divide), sorts each half (conquer), and merges them back in order (combine).",
+    why:["A – Greedy algorithms make locally optimal choices at each step (e.g., Dijkstra's).","B – Dynamic Programming solves overlapping subproblems with memoization.","C – Correct. Merge Sort splits, sorts recursively, and merges — classic D&C.","D – Backtracking explores all possibilities and undoes choices (e.g., N-Queens)."]},
+  { topic:"Algorithms", q:"What is the purpose of Dynamic Programming?", opts:["To randomly search for optimal solutions","To avoid recomputing overlapping subproblems by storing results","To always pick the locally optimal choice","To use recursion without a base case"], ans:1,
+    explain:"Dynamic Programming optimizes recursive algorithms by storing (memoizing or tabulating) results of subproblems, so each subproblem is solved only once instead of repeatedly.",
+    why:["A – Random search (Monte Carlo) is a separate technique.","B – Correct. DP stores intermediate results to avoid redundant computation.","C – That describes the Greedy approach, not DP.","D – Recursion without a base case leads to infinite loops, not DP."]},
+  { topic:"Algorithms", q:"Dijkstra's algorithm finds the shortest path in a graph with:", opts:["Negative weight edges only","Any edge weights including negative","Non-negative edge weights","Unweighted graphs only"], ans:2,
+    explain:"Dijkstra's algorithm uses a greedy approach with a priority queue. It is only correct when all edge weights are non-negative. For negative weights, Bellman-Ford must be used.",
+    why:["A – Dijkstra fails with negative weights; those require Bellman-Ford.","B – Negative edges can cause Dijkstra to produce incorrect results.","C – Correct. Dijkstra guarantees correctness only with non-negative edge weights.","D – Dijkstra works on weighted graphs; BFS handles unweighted shortest paths."]},
+  { topic:"Algorithms", q:"What is the space complexity of DFS on a graph with V vertices and E edges?", opts:["O(E)","O(V)","O(V + E)","O(1)"], ans:1,
+    explain:"DFS uses a stack (recursion call stack or explicit stack) proportional to the depth of traversal, which is at most O(V) in the worst case (a path graph). The visited array is also O(V).",
+    why:["A – O(E) is the edge count; DFS space depends on depth, bounded by V.","B – Correct. The call stack/visited array uses O(V) space.","C – O(V + E) is the time complexity of DFS, not space.","D – O(1) would mean constant space regardless of graph size, which is impossible here."]},
+  { topic:"Algorithms", q:"Which sorting algorithm has the best worst-case time complexity?", opts:["Bubble Sort","Quick Sort","Merge Sort","Insertion Sort"], ans:2,
+    explain:"Merge Sort guarantees O(n log n) in all cases — best, average, and worst. QuickSort has O(n²) worst case; Bubble and Insertion Sort are O(n²) worst case.",
+    why:["A – Bubble Sort is O(n²) in the worst case.","B – QuickSort's worst case is O(n²) due to bad pivot selection.","C – Correct. Merge Sort is always O(n log n), making it optimal for worst-case guarantees.","D – Insertion Sort is O(n²) worst case (already-reversed input)."]},
+
+  { topic:"Operating Systems", q:"What is a deadlock?", opts:["When a process runs infinitely without terminating","A situation where two or more processes wait indefinitely for each other to release resources","When the CPU utilization drops to 0%","A memory leak in the operating system kernel"], ans:1,
+    explain:"Deadlock occurs when a set of processes are each waiting for a resource held by another process in the set, creating a circular wait from which no process can proceed.",
+    why:["A – That describes an infinite loop or livelock, not deadlock.","B – Correct. Deadlock is a circular wait among processes for locked resources.","C – Zero CPU utilization could indicate idle state or I/O wait, not necessarily deadlock.","D – Memory leaks are a separate resource management issue."]},
+  { topic:"Operating Systems", q:"Which page replacement algorithm suffers from Belady's Anomaly?", opts:["Optimal (OPT)","LRU (Least Recently Used)","FIFO (First In First Out)","LFU (Least Frequently Used)"], ans:2,
+    explain:"Belady's Anomaly is the counterintuitive phenomenon where increasing the number of page frames can result in more page faults. This only occurs with FIFO replacement.",
+    why:["A – OPT is theoretically optimal and doesn't exhibit Belady's Anomaly.","B – LRU doesn't suffer from Belady's Anomaly; it's a stack algorithm.","C – Correct. FIFO can produce more faults with more frames due to Belady's Anomaly.","D – LFU replaces the least frequently used page and doesn't exhibit this anomaly."]},
+  { topic:"Operating Systems", q:"What does the term 'thrashing' mean in OS context?", opts:["A CPU scheduling starvation problem","Excessive paging activity where the OS spends more time swapping than executing processes","A type of file system corruption","Buffer overflow in kernel memory"], ans:1,
+    explain:"Thrashing occurs when a process doesn't have enough frames, causing constant page faults. The CPU spends most of its time servicing page faults rather than executing instructions, leading to near-zero productive throughput.",
+    why:["A – CPU scheduling starvation is a separate issue where a process never gets CPU time.","B – Correct. Thrashing is when excessive paging dominates CPU time over actual work.","C – File system corruption is a storage-level problem unrelated to paging.","D – Buffer overflow is a security/memory vulnerability, not a paging phenomenon."]},
+  { topic:"Operating Systems", q:"Which scheduling algorithm can cause starvation?", opts:["Round Robin","First Come First Served (FCFS)","Priority Scheduling","Shortest Job First (SJF) — non-preemptive"], ans:2,
+    explain:"Priority Scheduling can cause starvation because low-priority processes may never get CPU time if high-priority processes keep arriving. This is solved by aging — gradually increasing a process's priority over time.",
+    why:["A – Round Robin uses time slices, ensuring every process gets CPU time — no starvation.","B – FCFS processes jobs in order; no process is indefinitely skipped.","C – Correct. Priority Scheduling starves low-priority processes when high-priority ones dominate.","D – Non-preemptive SJF can cause starvation of long jobs but is less severe than priority scheduling."]},
+  { topic:"Operating Systems", q:"What is virtual memory?", opts:["Extra RAM installed to boost speed","A technique that uses disk space to extend the apparent size of RAM","Memory inside the GPU for graphics","Encrypted memory regions for secure data"], ans:1,
+    explain:"Virtual memory allows an OS to use disk space (swap space) as an extension of RAM. Processes can use more memory than physically available; the OS swaps pages between RAM and disk as needed.",
+    why:["A – Adding RAM is a hardware upgrade, not virtual memory.","B – Correct. Virtual memory extends RAM using disk storage through paging/swapping.","C – GPU memory (VRAM) is separate and unrelated to virtual memory.","D – Encrypted memory is a security feature, not a memory extension technique."]},
+
+  { topic:"Networking", q:"What does DNS stand for and what does it do?", opts:["Data Network System — manages network traffic","Domain Name System — translates domain names to IP addresses","Distributed Node Service — manages server clusters","Dynamic Network Switch — controls routing tables"], ans:1,
+    explain:"DNS (Domain Name System) is the internet's phonebook. It translates human-readable domain names (e.g., google.com) into IP addresses (e.g., 142.250.80.46) that computers use to route traffic.",
+    why:["A – 'Data Network System' is fabricated; DNS is not a traffic manager.","B – Correct. DNS maps domain names to IP addresses, enabling browser navigation.","C – 'Distributed Node Service' does not exist as a networking term.","D – Dynamic Network Switch is not a real protocol."]},
+  { topic:"Networking", q:"Which layer of the OSI model is responsible for end-to-end communication and error recovery?", opts:["Network Layer (Layer 3)","Data Link Layer (Layer 2)","Transport Layer (Layer 4)","Session Layer (Layer 5)"], ans:2,
+    explain:"The Transport Layer (Layer 4) provides end-to-end communication between processes on different hosts. TCP at this layer ensures reliable delivery, error recovery, flow control, and sequencing.",
+    why:["A – Network Layer handles logical addressing (IP) and routing between networks.","B – Data Link Layer deals with node-to-node delivery and MAC addressing on a local link.","C – Correct. Transport Layer (TCP/UDP) manages end-to-end data transfer and error recovery.","D – Session Layer manages sessions and dialogues between applications, not error recovery."]},
+  { topic:"Networking", q:"What is the difference between TCP and UDP?", opts:["TCP is faster but less reliable; UDP is slower but reliable","TCP provides reliable, ordered delivery; UDP is faster but connectionless with no delivery guarantee","TCP is used for video streaming; UDP is used for file transfers","TCP and UDP are identical protocols with different port numbers"], ans:1,
+    explain:"TCP (Transmission Control Protocol) establishes a connection, guarantees ordered delivery, and handles retransmission on error — ideal for HTTP, email. UDP (User Datagram Protocol) sends data without connection setup or guarantees — ideal for video streaming, DNS, gaming.",
+    why:["A – This reverses the truth; TCP is reliable but has overhead, UDP is fast but unreliable.","B – Correct. TCP is connection-oriented with guarantees; UDP trades reliability for speed.","C – In reality, video streaming often uses UDP; file transfers use TCP.","D – TCP and UDP are fundamentally different protocols, not just port variations."]},
+  { topic:"Networking", q:"What does HTTP status code 404 indicate?", opts:["Server internal error","Request was successful","Resource not found","Unauthorized access — authentication required"], ans:2,
+    explain:"HTTP 404 Not Found means the server could not locate the requested resource. The URL may be incorrect, the resource may have been deleted, or it may have moved without a redirect being set up.",
+    why:["A – 500 Internal Server Error indicates a server-side problem.","B – 200 OK indicates a successful request.","C – Correct. 404 Not Found means the requested resource doesn't exist at that URL.","D – 401 Unauthorized means authentication is required; 403 Forbidden means access is denied."]},
+  { topic:"Networking", q:"Which protocol is used to assign IP addresses dynamically to devices on a network?", opts:["FTP","DHCP","SMTP","ARP"], ans:1,
+    explain:"DHCP (Dynamic Host Configuration Protocol) automatically assigns IP addresses, subnet masks, default gateways, and DNS server addresses to devices on a network, eliminating the need for manual IP configuration.",
+    why:["A – FTP (File Transfer Protocol) is used for transferring files, not IP assignment.","B – Correct. DHCP dynamically assigns IP addresses and network configuration to clients.","C – SMTP (Simple Mail Transfer Protocol) handles email transmission.","D – ARP (Address Resolution Protocol) maps IP addresses to MAC addresses, not dynamic assignment."]}
+];
+
+/* ════════════════════════════════
+   STATE
+   ════════════════════════════════ */
+let currentQ = 0;
+const answers = new Array(QUESTIONS.length).fill(null);
+const marked  = new Array(QUESTIONS.length).fill(false);
+let timerSecs = 45 * 60;
+let timerInt  = null;
+let quizDone  = false;
+let timeUsed  = 0;
+
+/* ════════════════════════════════
+   STARS BG
+   ════════════════════════════════ */
+const sc=document.getElementById('stars');
+const sx=sc.getContext('2d');
+let stars=[];
+function sizeS(){sc.width=innerWidth;sc.height=innerHeight;stars=Array.from({length:120},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.2+.2,a:Math.random(),s:Math.random()*.012+.003}));}
+sizeS();window.addEventListener('resize',sizeS);
+(function drawS(){sx.clearRect(0,0,sc.width,sc.height);for(const s of stars){s.a+=s.s;const o=((Math.sin(s.a)+1)/2)*.7+.2;sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);sx.fillStyle=`rgba(248,250,252,${o})`;sx.fill();}requestAnimationFrame(drawS);})();
+
+/* ════════════════════════════════
+   CURSOR
+   ════════════════════════════════ */
+const cur=document.getElementById('cursor'),cg=document.getElementById('cursor-glow');
+window.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px';});
+
+/* ════════════════════════════════
+   TIMER
+   ════════════════════════════════ */
+function updateTimerUI(){
+  const m=Math.floor(timerSecs/60), s=timerSecs%60;
+  const td=document.getElementById('timerDisplay');
+  document.getElementById('timerM').textContent=String(m).padStart(2,'0');
+  document.getElementById('timerS').textContent=String(s).padStart(2,'0');
+  td.classList.remove('warn','danger');
+  if(timerSecs<=300&&timerSecs>60) td.classList.add('warn');
+  if(timerSecs<=60) td.classList.add('danger');
+}
+timerInt=setInterval(()=>{
+  if(quizDone)return;
+  timerSecs--;timeUsed++;
+  updateTimerUI();
+  if(timerSecs<=0){clearInterval(timerInt);submitQuiz();}
+},1000);
+updateTimerUI();
+
+/* ════════════════════════════════
+   BUILD NAVIGATOR
+   ════════════════════════════════ */
+function buildNav(){
+  const grid=document.getElementById('navGrid');
+  grid.innerHTML='';
+  QUESTIONS.forEach((_,i)=>{
+    const cell=document.createElement('div');
+    cell.className='nav-cell';
+    cell.textContent=i+1;
+    cell.onclick=()=>goTo(i);
+    grid.appendChild(cell);
+  });
+}
+buildNav();
+
+function refreshNav(){
+  const cells=document.querySelectorAll('.nav-cell');
+  QUESTIONS.forEach((_,i)=>{
+    const c=cells[i];
+    c.className='nav-cell';
+    if(quizDone){
+      if(answers[i]===QUESTIONS[i].ans) c.classList.add('correct');
+      else if(answers[i]===null) c.classList.add('skipped');
+      else c.classList.add('incorrect');
+    } else {
+      if(marked[i]) c.classList.add('marked');
+      else if(answers[i]!==null) c.classList.add('answered');
+    }
+    if(i===currentQ&&!quizDone) c.classList.add('current');
+  });
+}
+
+/* ════════════════════════════════
+   RENDER QUESTION
+   ════════════════════════════════ */
+function renderQ(){
+  const q=QUESTIONS[currentQ];
+  document.getElementById('qLabel').textContent=`Question ${currentQ+1} of ${QUESTIONS.length}`;
+  document.getElementById('qTopic').textContent=q.topic;
+  document.getElementById('qText').textContent=q.q;
+
+  const opts=document.getElementById('optionsEl');
+  opts.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.opts.forEach((o,i)=>{
+    const div=document.createElement('div');
+    div.className='option'+(answers[currentQ]===i?' selected':'');
+    div.innerHTML=`<div class="opt-letter">${letters[i]}</div><div class="opt-text">${o}</div><div class="opt-icon">${answers[currentQ]===i?'◉':''}</div>`;
+    div.onclick=()=>selectOpt(i);
+    opts.appendChild(div);
+  });
+
+  // sidebar progress
+  const answered=answers.filter(a=>a!==null).length;
+  document.getElementById('sideProg').textContent=currentQ+1;
+  document.getElementById('sideProgBar').style.width=((currentQ+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('sideProgSub').textContent=`${answered} answered · ${QUESTIONS.length-answered} remaining`;
+
+  // bottom nav
+  document.getElementById('btnPrev').disabled=currentQ===0;
+  const isLast=currentQ===QUESTIONS.length-1;
+  document.getElementById('btnNext').style.display=isLast?'none':'';
+  document.getElementById('btnSubmit').style.display=isLast?'':'none';
+  document.getElementById('bottomHint').textContent=answers[currentQ]!==null?'✓ Answered':'Select an answer to continue';
+
+  // mark btn
+  const mb=document.getElementById('markBtn');
+  mb.classList.toggle('marked-active',marked[currentQ]);
+  document.getElementById('markBtnText').textContent=marked[currentQ]?'Unmark Review':'Mark for Review';
+
+
+
+  refreshNav();
+}
+
+function selectOpt(i){
+  answers[currentQ]=i;
+  renderQ();
+}
+
+function goTo(i){
+  if(i<0||i>=QUESTIONS.length) return;
+  currentQ=i;
+  renderQ();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleMark(){
+  marked[currentQ]=!marked[currentQ];
+  renderQ();
+}
+
+/* ════════════════════════════════
+   SUBMIT CONFIRM
+   ════════════════════════════════ */
+function showConfirm(){
+  const answered=answers.filter(a=>a!==null).length;
+  const unanswered=QUESTIONS.length-answered;
+  document.getElementById('confirmSub').textContent=
+    unanswered>0
+      ? `You have answered ${answered} of ${QUESTIONS.length} questions. ${unanswered} unanswered question${unanswered>1?'s':''} will be marked incorrect.`
+      : `You have answered all ${QUESTIONS.length} questions. Ready to submit?`;
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+/* ════════════════════════════════
+   SUBMIT QUIZ
+   ════════════════════════════════ */
+function submitQuiz(){
+  clearInterval(timerInt);
+  quizDone=true;
+  document.getElementById('confirmModal').classList.remove('show');
+
+  const correct=answers.reduce((acc,a,i)=>acc+(a===QUESTIONS[i].ans?1:0),0);
+  const total=QUESTIONS.length;
+  const skipped=answers.filter(a=>a===null).length;
+  const acc=Math.round(correct/total*100);
+
+  // time used
+  const mu=Math.floor(timeUsed/60), su=timeUsed%60;
+  const timeStr=`${String(mu).padStart(2,'0')}:${String(su).padStart(2,'0')}`;
+
+  // topic performance
+  const topicMap={};
+  QUESTIONS.forEach((q,i)=>{
+    if(!topicMap[q.topic]) topicMap[q.topic]={correct:0,total:0};
+    topicMap[q.topic].total++;
+    if(answers[i]===q.ans) topicMap[q.topic].correct++;
+  });
+  const weak=[],strong=[];
+  Object.entries(topicMap).forEach(([t,v])=>{
+    const pct=v.correct/v.total;
+    if(pct<0.6) weak.push(t); else strong.push(t);
+  });
+
+  // grade
+  let grade,gradeClass;
+  if(acc>=90){grade='S — Excellent';gradeClass='grade-s';}
+  else if(acc>=80){grade='A — Great';gradeClass='grade-a';}
+  else if(acc>=65){grade='B — Good';gradeClass='grade-b';}
+  else if(acc>=50){grade='C — Average';gradeClass='grade-c';}
+  else{grade='F — Keep Practising';gradeClass='grade-f';}
+
+  // populate results
+  document.getElementById('resBigScore').textContent=`${correct} / ${total}`;
+  document.getElementById('resAccuracy').textContent=acc+'%';
+  document.getElementById('resTime').textContent=timeStr;
+  document.getElementById('resSkipped').textContent=skipped;
+  const gradeEl=document.getElementById('resGrade');
+  gradeEl.textContent=grade;
+  gradeEl.className='res-grade '+gradeClass;
+
+  document.getElementById('weakTopics').innerHTML=
+    weak.length?weak.map(t=>`<span class="topic-tag tag-weak">✗ ${t}</span>`).join(''):'<span style="color:var(--text-tertiary);font-size:13px">None — great work!</span>';
+  document.getElementById('strongTopics').innerHTML=
+    strong.length?strong.map(t=>`<span class="topic-tag tag-strong">✓ ${t}</span>`).join(''):'<span style="color:var(--text-tertiary);font-size:13px">Keep practising!</span>';
+
+  // switch views
+  document.getElementById('quizView').style.display='none';
+  document.getElementById('resultsView').classList.add('show');
+  refreshNav();
+}
+
+/* ════════════════════════════════
+   REVIEW LIST — clicking incorrect
+   ════════════════════════════════ */
+function showReviewList(){
+  // Find first incorrect question and open review
+  const incorrect=QUESTIONS.map((_,i)=>i).filter(i=>answers[i]!==QUESTIONS[i].ans);
+  if(incorrect.length===0) return;
+
+  // Build a mini list overlay via review card, cycling through incorrect
+  let reviewIdx=0;
+  function openNext(){
+    openReview(incorrect[reviewIdx]);
+  }
+
+  // Patch close to go to next incorrect or close
+  window._reviewIncorrect=incorrect;
+  window._reviewIdx=0;
+  openReview(incorrect[0], true);
+}
+
+/* ════════════════════════════════
+   REVIEW SINGLE QUESTION
+   ════════════════════════════════ */
+function openReview(qIdx, fromList=false){
+  const q=QUESTIONS[qIdx];
+  const userAns=answers[qIdx];
+  const corrAns=q.ans;
+  const letters=['A','B','C','D'];
+
+  document.getElementById('revQNum').textContent=`Question ${qIdx+1} of ${QUESTIONS.length}`;
+  document.getElementById('revQuestion').textContent=q.q;
+
+  // options
+  const revOpts=document.getElementById('revOptions');
+  revOpts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const div=document.createElement('div');
+    let cls='rev-opt';
+    let icon='';
+    if(i===corrAns){cls+=' rev-correct';icon=' ✓';}
+    else if(i===userAns&&userAns!==corrAns){cls+=' rev-wrong';icon=' ✗';}
+    div.className=cls;
+    div.innerHTML=`<div class="rev-letter">${letters[i]}</div><div class="rev-opt-text">${o}${icon?'<strong>'+icon+'</strong>':''}</div>`;
+    revOpts.appendChild(div);
+  });
+
+  // explanation
+  document.getElementById('revExplain').innerHTML=q.explain;
+
+  // why list
+  const whyList=document.getElementById('revWhyList');
+  whyList.innerHTML='';
+  q.why.forEach((w,i)=>{
+    const div=document.createElement('div');
+    div.className='why-item';
+    const isCorrect=i===corrAns;
+    div.innerHTML=`<div class="why-item-head ${isCorrect?'why-correct-head':'why-wrong-head'}">${isCorrect?'✓':'✗'} Option ${letters[i]}</div><div class="why-item-text">${w}</div>`;
+    whyList.appendChild(div);
+  });
+
+  // navigation within incorrect list
+  if(fromList||window._reviewIncorrect){
+    const incorrect=window._reviewIncorrect||[];
+    const idx=incorrect.indexOf(qIdx);
+    const hasNext=idx>=0&&idx<incorrect.length-1;
+    const hasPrev=idx>0;
+    const navRow=document.createElement('div');
+    navRow.style.cssText='display:flex;gap:10px;margin-top:20px;';
+    if(hasPrev){
+      const pb=document.createElement('button');
+      pb.className='quiz-btn btn-prev';pb.style.flex='1';pb.textContent='← Previous';
+      pb.onclick=()=>openReview(incorrect[idx-1],true);
+      navRow.appendChild(pb);
+    }
+    if(hasNext){
+      const nb=document.createElement('button');
+      nb.className='quiz-btn btn-next';nb.style.flex='1';nb.textContent='Next incorrect →';
+      nb.onclick=()=>openReview(incorrect[idx+1],true);
+      navRow.appendChild(nb);
+    }
+    if(navRow.children.length) whyList.appendChild(navRow);
+  }
+
+  document.getElementById('reviewOverlay').classList.add('show');
+}
+
+function closeReview(){
+  document.getElementById('reviewOverlay').classList.remove('show');
+  window._reviewIncorrect=null;
+}
+document.getElementById('reviewOverlay').addEventListener('click',function(e){
+  if(e.target===this) closeReview();
+});
+
+/* ════════════════════════════════
+   ALSO: click nav cells after quiz to review
+   ════════════════════════════════ */
+document.getElementById('navGrid').addEventListener('click',function(e){
+  if(!quizDone) return;
+  const cell=e.target.closest('.nav-cell');
+  if(!cell) return;
+  const idx=Array.from(this.children).indexOf(cell);
+  if(idx>=0) openReview(idx);
+});
+
+/* ════════════════════════════════
+   INIT
+   ════════════════════════════════ */
+renderQ();
+</script>
+</body>
+</html>

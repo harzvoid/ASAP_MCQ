@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASAPMCQ — Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-void:#03040A;--bg-deep:#060814;--bg-surface:#0D1020;--bg-surface-2:#11152A;
+  --violet:#8B5CF6;--violet-bright:#A78BFA;--cyan:#22D3EE;--teal:#14F195;
+  --magenta:#FF4FD8;--amber:#FFB454;--red:#FF5370;
+  --text-primary:#F8FAFC;--text-secondary:#A1A8C5;--text-tertiary:#5D6280;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg-void);color:var(--text-primary);font-family:'Inter',sans-serif;overflow-x:hidden;}
+::selection{background:var(--violet);color:#fff;}
+
+.bg-grad{position:fixed;inset:0;z-index:-6;background:radial-gradient(ellipse 80% 50% at 50% -5%,rgba(139,92,246,.22),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(34,211,238,.09),transparent 60%),linear-gradient(180deg,var(--bg-void),var(--bg-deep) 50%,var(--bg-void));}
+#stars{position:fixed;inset:0;z-index:-5;}
+.nebula{position:fixed;inset:0;z-index:-4;background:radial-gradient(ellipse 55% 40% at 15% 25%,rgba(139,92,246,.1),transparent 70%),radial-gradient(ellipse 45% 35% at 85% 65%,rgba(255,79,216,.07),transparent 70%);filter:blur(48px);animation:nebDrift 35s ease-in-out infinite alternate;}
+@keyframes nebDrift{0%{transform:translate(0,0) scale(1);}100%{transform:translate(2%,-2%) scale(1.05);}}
+#particles{position:fixed;inset:0;z-index:-3;}
+.grid-fade{position:fixed;inset:0;z-index:-2;background-image:linear-gradient(rgba(248,250,252,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(248,250,252,.018) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse 70% 50% at 50% 0%,black 0%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse 70% 50% at 50% 0%,black 0%,transparent 70%);}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:16px 36px;background:rgba(6,8,20,.5);backdrop-filter:blur(20px);border-bottom:1px solid rgba(248,250,252,.07);}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.02em;background:linear-gradient(90deg,#fff,#C4B5FD);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.nav-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-tertiary);}
+.nbtn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--violet-bright);transition:all .2s;}
+.nbtn:hover{background:rgba(139,92,246,.22);}
+
+/* ── PAGE ── */
+.page{max-width:1100px;margin:0 auto;padding:48px 24px 80px;}
+
+/* ── HERO SCORE ── */
+.hero-score{display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center;margin-bottom:48px;animation:fadeUp .7s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* SVG circle */
+.score-ring-wrap{position:relative;width:200px;height:200px;flex-shrink:0;}
+.score-ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:rgba(248,250,252,.07);stroke-width:10;}
+.ring-fill{fill:none;stroke-width:10;stroke-linecap:round;stroke-dasharray:565.48;stroke-dashoffset:565.48;transition:stroke-dashoffset 2s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 10px rgba(139,92,246,.7));}
+.ring-fill.animated{stroke:url(#ringGrad);}
+.score-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.score-pct-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;line-height:1;letter-spacing:-.03em;}
+.score-pct-sym{font-size:18px;color:var(--text-secondary);font-weight:500;}
+.score-pct-lbl{font-size:12px;color:var(--text-tertiary);margin-top:3px;}
+
+.score-info{min-width:0;}
+.score-badge-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.score-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.08);color:var(--violet-bright);}
+.grade-pill{padding:6px 16px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.04em;}
+.gS{background:rgba(20,241,149,.12);border:1px solid rgba(20,241,149,.4);color:var(--teal);}
+.gA{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:var(--cyan);}
+.gB{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);color:var(--violet-bright);}
+.gC{background:rgba(255,180,84,.1);border:1px solid rgba(255,180,84,.3);color:var(--amber);}
+.gF{background:rgba(255,83,112,.1);border:1px solid rgba(255,83,112,.3);color:var(--red);}
+.score-headline{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2rem,4vw,3rem);line-height:1.05;letter-spacing:-.03em;margin-bottom:8px;}
+.grad-text{background:linear-gradient(90deg,var(--violet-bright),var(--cyan),var(--teal),var(--violet-bright));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradShift 6s ease infinite;}
+@keyframes gradShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+.score-sub{font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:24px;}
+.stat-chips{display:flex;flex-wrap:wrap;gap:10px;}
+.stat-chip{display:flex;flex-direction:column;padding:12px 18px;border-radius:12px;border:1px solid rgba(248,250,252,.08);background:rgba(17,21,42,.7);}
+.stat-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text-tertiary);}
+
+/* ── SECTION TEMPLATE ── */
+.section{border-radius:18px;border:1px solid rgba(248,250,252,.08);background:rgba(13,16,32,.6);backdrop-filter:blur(20px);padding:28px;margin-bottom:20px;animation:fadeUp .7s ease both;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.sec-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;display:flex;align-items:center;gap:10px;}
+.sec-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.sec-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-tertiary);padding:4px 10px;border-radius:7px;background:rgba(248,250,252,.05);border:1px solid rgba(248,250,252,.07);}
+
+/* ── TOPIC MASTERY BARS ── */
+.topic-bar-list{display:flex;flex-direction:column;gap:14px;}
+.topic-bar-item{display:block;}
+.topic-bar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.topic-name{font-size:14px;font-weight:500;}
+.topic-score-text{font-family:'JetBrains Mono',monospace;font-size:12px;}
+.bar-track{height:7px;border-radius:999px;background:rgba(248,250,252,.07);overflow:hidden;}
+.bar-fill{height:100%;border-radius:999px;width:0%;transition:width 1.4s cubic-bezier(.4,0,.2,1);}
+
+/* ── WEAK / STRONG TOPICS ── */
+.topic-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.ttag{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:500;}
+.ttag-icon{font-size:14px;}
+.tweak{background:rgba(255,83,112,.08);border:1px solid rgba(255,83,112,.25);color:var(--red);}
+.tstrong{background:rgba(20,241,149,.07);border:1px solid rgba(20,241,149,.2);color:var(--teal);}
+
+/* ── ACHIEVEMENTS ── */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+.badge-card{border-radius:14px;padding:18px 16px;text-align:center;border:1px solid transparent;background:rgba(17,21,42,.7);transition:transform .2s,box-shadow .3s;cursor:default;opacity:.35;position:relative;overflow:hidden;}
+.badge-card.earned{opacity:1;border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.07);}
+.badge-card.earned:hover{transform:translateY(-2px);box-shadow:0 10px 30px -10px rgba(139,92,246,.4);}
+.badge-card.earned::before{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;background:radial-gradient(circle,rgba(139,92,246,.25),transparent 70%);}
+.badge-emoji{font-size:32px;display:block;margin-bottom:10px;}
+.badge-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px;}
+.badge-desc{font-size:11px;color:var(--text-tertiary);line-height:1.4;}
+.badge-new{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;background:var(--amber);color:var(--bg-void);letter-spacing:.05em;}
+
+/* ── REVIEW INCORRECT ── */
+.review-list{display:flex;flex-direction:column;gap:12px;}
+.rev-item{border-radius:14px;border:1px solid rgba(248,250,252,.07);background:rgba(17,21,42,.5);overflow:hidden;transition:border-color .2s;}
+.rev-item:hover{border-color:rgba(139,92,246,.3);}
+.rev-trigger{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;user-select:none;}
+.rev-num{width:28px;height:28px;border-radius:8px;background:rgba(255,83,112,.15);border:1px solid rgba(255,83,112,.3);color:var(--red);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rev-q{font-size:14px;font-weight:500;color:var(--text-primary);flex:1;line-height:1.4;}
+.rev-arrow{color:var(--text-tertiary);font-size:14px;transition:transform .25s;flex-shrink:0;}
+.rev-item.open .rev-arrow{transform:rotate(90deg);}
+.rev-body{display:none;padding:0 18px 18px;border-top:1px solid rgba(248,250,252,.06);}
+.rev-item.open .rev-body{display:block;}
+.rev-opts-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
+.rev-opt{padding:10px 14px;border-radius:10px;border:1px solid rgba(248,250,252,.07);background:rgba(13,16,32,.5);display:flex;align-items:flex-start;gap:9px;font-size:13px;}
+.rev-opt.rc{border-color:rgba(20,241,149,.4);background:rgba(20,241,149,.06);color:var(--teal);}
+.rev-opt.rw{border-color:rgba(255,83,112,.35);background:rgba(255,83,112,.06);color:var(--red);}
+.rev-letter{font-weight:700;font-size:11px;flex-shrink:0;margin-top:1px;}
+.explain-box{border-radius:12px;border:1px solid rgba(139,92,246,.22);background:rgba(139,92,246,.05);padding:14px 16px;margin-top:4px;}
+.explain-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--violet-bright);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.explain-txt{font-size:13px;color:var(--text-secondary);line-height:1.65;}
+.why-mini{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.why-row{font-size:12px;color:var(--text-tertiary);line-height:1.5;padding:7px 10px;border-radius:8px;background:rgba(17,21,42,.6);}
+.why-row strong{color:var(--text-primary);}
+
+/* ── ACTION BUTTONS ── */
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;}
+.abtn{padding:15px;border-radius:14px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .22s;}
+.abtn span.ai{font-size:22px;}
+.abtn span.al{font-size:13px;}
+.abtn-primary{background:linear-gradient(135deg,var(--violet),#7C3AED);color:#fff;}
+.abtn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px -8px rgba(139,92,246,.65);}
+.abtn-cyan{background:linear-gradient(135deg,#0E7490,#0891B2);color:#fff;}
+.abtn-cyan:hover{transform:translateY(-2px);box-shadow:0 10px 28px -8px rgba(34,211,238,.5);}
+.abtn-ghost{background:rgba(17,21,42,.8);color:var(--text-primary);border:1px solid rgba(248,250,252,.1);}
+.abtn-ghost:hover{border-color:rgba(248,250,252,.3);transform:translateY(-2px);}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.9),transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;}
+#cur-g{position:fixed;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.09),transparent 70%);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);filter:blur(8px);}
+
+@media(max-width:700px){
+  .hero-score{grid-template-columns:1fr;text-align:center;}
+  .score-ring-wrap{margin:0 auto;}
+  .score-badge-row{justify-content:center;}
+  .stat-chips{justify-content:center;}
+  .actions{grid-template-columns:1fr;}
+  .rev-opts-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grad"></div>
+<canvas id="stars"></canvas>
+<div class="nebula"></div>
+<div class="grid-fade"></div>
+<canvas id="particles"></canvas>
+<div id="cur"></div><div id="cur-g"></div>
+
+<nav>
+  <div class="logo">ASAPMCQ</div>
+  <div class="nav-tag">Results · Database Management</div>
+  <button class="nbtn" onclick="location.href='quiz.html'">↺ Practice Again</button>
+</nav>
+
+<div class="page">
+
+  <!-- ①  HERO SCORE ─────────────────────── -->
+  <div class="hero-score" style="animation-delay:0s">
+
+    <!-- animated ring -->
+    <div class="score-ring-wrap">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#8B5CF6"/>
+            <stop offset="50%"  stop-color="#22D3EE"/>
+            <stop offset="100%" stop-color="#14F195"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="100" cy="100" r="90"/>
+        <circle class="ring-fill animated" id="ringFill" cx="100" cy="100" r="90"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-pct-num grad-text" id="pctNum">0</div>
+        <div class="score-pct-sym">%</div>
+        <div class="score-pct-lbl">accuracy</div>
+      </div>
+    </div>
+
+    <div class="score-info">
+      <div class="score-badge-row">
+        <div class="score-badge">✦ Quiz Complete</div>
+        <div class="grade-pill gA" id="gradePill">A — Great</div>
+      </div>
+      <div class="score-headline">You scored <span class="grad-text" id="scoreText">23 / 25</span></div>
+      <p class="score-sub">Strong performance overall. You've demonstrated solid command of most topics — review the 2 incorrect answers below to close the remaining gaps.</p>
+      <div class="stat-chips">
+        <div class="stat-chip"><span class="stat-val" style="color:var(--teal)">92%</span><span class="stat-lbl">Accuracy</span></div>
+        <div class="stat-chip"><span class="stat-val" style="color:var(--amber)">18:42</span><span class="stat-lbl">Time Taken</span></div>
+        <div class="stat-chip"><span class="stat-val" style="color:var(--violet-bright)">Medium</span><span class="stat-lbl">Difficulty</span></div>
+        <div class="stat-chip"><span class="stat-val" style="color:var(--cyan)">2</span><span class="stat-lbl">Incorrect</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ②  TOPIC MASTERY ─────────────────── -->
+  <div class="section" style="animation-delay:.1s">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-icon" style="background:rgba(139,92,246,.15)">📊</div>Topic Mastery</div>
+      <div class="sec-count">5 topics</div>
+    </div>
+    <div class="topic-bar-list" id="topicBars"></div>
+  </div>
+
+  <!-- ③  WEAK / STRONG ─────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+
+    <div class="section" style="animation-delay:.15s;margin-bottom:0">
+      <div class="sec-head" style="margin-bottom:16px">
+        <div class="sec-title"><div class="sec-icon" style="background:rgba(255,83,112,.12)">⚠️</div>Weak Topics</div>
+      </div>
+      <div class="topic-grid" id="weakGrid"></div>
+    </div>
+
+    <div class="section" style="animation-delay:.18s;margin-bottom:0">
+      <div class="sec-head" style="margin-bottom:16px">
+        <div class="sec-title"><div class="sec-icon" style="background:rgba(20,241,149,.1)">✦</div>Strong Topics</div>
+      </div>
+      <div class="topic-grid" id="strongGrid"></div>
+    </div>
+
+  </div>
+
+  <!-- ④  ACHIEVEMENTS ─────────────────── -->
+  <div class="section" style="animation-delay:.22s">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-icon" style="background:rgba(255,180,84,.12)">🏆</div>Achievements</div>
+      <div class="sec-count" id="badgeCount">0 earned</div>
+    </div>
+    <div class="badges-grid" id="badgesGrid"></div>
+  </div>
+
+  <!-- ⑤  REVIEW INCORRECT ──────────────── -->
+  <div class="section" style="animation-delay:.26s">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-icon" style="background:rgba(255,83,112,.1)">📋</div>Review Incorrect Questions</div>
+      <div class="sec-count" id="wrongCount">2 questions</div>
+    </div>
+    <div class="review-list" id="reviewList"></div>
+  </div>
+
+  <!-- ⑥  ACTION BUTTONS ─────────────────── -->
+  <div class="actions">
+    <button class="abtn abtn-primary" onclick="location.href='loading.html'"><span class="ai">↺</span><span class="al">Practice Again</span></button>
+    <button class="abtn abtn-cyan"    onclick="location.href='generator.html'"><span class="ai">⌂</span><span class="al">Dashboard</span></button>
+    <button class="abtn abtn-ghost"   onclick="location.href='index.html'"><span class="ai">🏠</span><span class="al">Home</span></button>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ═══════ STARS / PARTICLES ═══════ */
+const sc=document.getElementById('stars'),sx=sc.getContext('2d');let strs=[];
+function sS(){sc.width=innerWidth;sc.height=innerHeight;strs=Array.from({length:150},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.2+.2,a:Math.random(),s:Math.random()*.012+.003}));}
+sS();window.addEventListener('resize',sS);
+(function dS(){sx.clearRect(0,0,sc.width,sc.height);for(const s of strs){s.a+=s.s;const o=((Math.sin(s.a)+1)/2)*.7+.2;sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);sx.fillStyle=`rgba(248,250,252,${o})`;sx.fill();}requestAnimationFrame(dS);})();
+const pc=document.getElementById('particles'),px=pc.getContext('2d');
+const PCOLS=['139,92,246','34,211,238','20,241,149','255,79,216'];let pts=[];
+function sP(){pc.width=innerWidth;pc.height=innerHeight;pts=Array.from({length:40},(_,i)=>({x:Math.random()*pc.width,y:Math.random()*pc.height,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.8+.4,ci:i%4}));}
+sP();window.addEventListener('resize',sP);
+(function dP(){px.clearRect(0,0,pc.width,pc.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;px.beginPath();px.arc(p.x,p.y,p.r,0,Math.PI*2);px.fillStyle=`rgba(${PCOLS[p.ci]},.4)`;px.fill();});requestAnimationFrame(dP);})();
+const cur=document.getElementById('cur'),cg=document.getElementById('cur-g');
+window.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px';});
+
+/* ═══════ RESULT DATA ═══════ */
+const RESULT={
+  correct:23, total:25, timeSecs:18*60+42,
+  difficulty:'Medium',
+  topics:[
+    {name:'Databases',           correct:5, total:5},
+    {name:'Data Structures',     correct:5, total:5},
+    {name:'Algorithms',          correct:4, total:5},
+    {name:'Operating Systems',   correct:5, total:5},
+    {name:'Networking',          correct:4, total:5},
+  ],
+  wrongQs:[
+    {
+      n:11, q:'What algorithm paradigm does Merge Sort use?',
+      opts:['Greedy','Dynamic Programming','Divide and Conquer','Backtracking'],
+      ans:2, userAns:0,
+      explain:'Merge Sort uses Divide and Conquer: it recursively splits the array in half, sorts each half, and merges them back in order.',
+      why:["A – Greedy algorithms pick the locally optimal choice at each step (e.g. Dijkstra's).","B – Dynamic Programming stores subproblem results; Merge Sort doesn't.","C – Correct. Merge Sort splits, sorts recursively, and merges — classic D&C.","D – Backtracking explores all possibilities (e.g. N-Queens), not sorting."],
+    },
+    {
+      n:22, q:'Which layer of the OSI model is responsible for end-to-end communication?',
+      opts:['Network Layer (3)','Data Link Layer (2)','Transport Layer (4)','Session Layer (5)'],
+      ans:2, userAns:0,
+      explain:'The Transport Layer (Layer 4) provides end-to-end communication between processes. TCP at this layer ensures reliable delivery, ordering, and error recovery.',
+      why:['A – Network Layer handles logical addressing (IP) and routing, not end-to-end process communication.','B – Data Link Layer manages node-to-node delivery on a local link via MAC addresses.','C – Correct. Transport Layer (TCP/UDP) manages end-to-end transfer and error recovery.','D – Session Layer manages sessions and dialogues, not transport-level error recovery.'],
+    },
+  ],
+};
+
+const ACC = Math.round(RESULT.correct/RESULT.total*100);
+
+/* ═══════ GRADE ═══════ */
+function getGrade(acc){
+  if(acc>=90) return {text:'S — Excellent', cls:'gS'};
+  if(acc>=80) return {text:'A — Great',      cls:'gA'};
+  if(acc>=65) return {text:'B — Good',       cls:'gB'};
+  if(acc>=50) return {text:'C — Average',    cls:'gC'};
+  return              {text:'F — Keep Going', cls:'gF'};
+}
+const grade=getGrade(ACC);
+document.getElementById('gradePill').textContent=grade.text;
+document.getElementById('gradePill').className='grade-pill '+grade.cls;
+document.getElementById('scoreText').textContent=`${RESULT.correct} / ${RESULT.total}`;
+
+/* ═══════ ANIMATED RING + COUNTER ═══════ */
+const CIRC=2*Math.PI*90; // 565.48
+const ringEl=document.getElementById('ringFill');
+const pctEl=document.getElementById('pctNum');
+ringEl.style.strokeDasharray=CIRC;
+ringEl.style.strokeDashoffset=CIRC;
+
+setTimeout(()=>{
+  const target=ACC/100*CIRC;
+  ringEl.style.strokeDashoffset=CIRC-target;
+  const dur=2000, t0=performance.now();
+  (function tick(now){
+    const p=Math.min((now-t0)/dur,1);
+    const e=1-Math.pow(1-p,3);
+    pctEl.textContent=Math.floor(e*ACC);
+    if(p<1) requestAnimationFrame(tick);
+    else pctEl.textContent=ACC;
+  })(performance.now());
+},400);
+
+/* ═══════ TOPIC BARS ═══════ */
+const TOPICCOLORS=[
+  {bar:'linear-gradient(90deg,#8B5CF6,#A78BFA)',text:'var(--violet-bright)'},
+  {bar:'linear-gradient(90deg,#22D3EE,#06B6D4)', text:'var(--cyan)'},
+  {bar:'linear-gradient(90deg,#14F195,#10B981)', text:'var(--teal)'},
+  {bar:'linear-gradient(90deg,#FFB454,#F59E0B)', text:'var(--amber)'},
+  {bar:'linear-gradient(90deg,#FF4FD8,#DB2777)', text:'var(--magenta)'},
+];
+const barsEl=document.getElementById('topicBars');
+RESULT.topics.forEach((t,i)=>{
+  const pct=Math.round(t.correct/t.total*100);
+  const col=TOPICCOLORS[i];
+  const div=document.createElement('div');
+  div.className='topic-bar-item';
+  div.innerHTML=`<div class="topic-bar-head">
+    <span class="topic-name">${t.name}</span>
+    <span class="topic-score-text" style="color:${col.text}">${t.correct}/${t.total} · ${pct}%</span>
+  </div>
+  <div class="bar-track"><div class="bar-fill" id="bar${i}" style="background:${col.bar}"></div></div>`;
+  barsEl.appendChild(div);
+  setTimeout(()=>{ document.getElementById('bar'+i).style.width=pct+'%'; }, 500+i*120);
+});
+
+/* ═══════ WEAK / STRONG ═══════ */
+const weakEl=document.getElementById('weakGrid'), strongEl=document.getElementById('strongGrid');
+RESULT.topics.forEach(t=>{
+  const pct=t.correct/t.total;
+  const tag=document.createElement('div');
+  if(pct<1){
+    tag.className='ttag tweak';
+    tag.innerHTML=`<span class="ttag-icon">✗</span>${t.name} (${Math.round(pct*100)}%)`;
+    weakEl.appendChild(tag);
+  } else {
+    tag.className='ttag tstrong';
+    tag.innerHTML=`<span class="ttag-icon">✓</span>${t.name}`;
+    strongEl.appendChild(tag);
+  }
+});
+
+/* ═══════ ACHIEVEMENTS ═══════ */
+const ACHIEVEMENTS=[
+  {emoji:'🏆',name:'High Achiever',  desc:'Score 90% or above',          earned: ACC>=90},
+  {emoji:'⚡',name:'Speed Demon',    desc:'Finish in under 20 minutes',   earned: RESULT.timeSecs<20*60},
+  {emoji:'💎',name:'Perfect Chapter',desc:'100% in any single topic',     earned: RESULT.topics.some(t=>t.correct===t.total)},
+  {emoji:'🎯',name:'Accuracy King',  desc:'Achieve 95%+ accuracy',        earned: ACC>=95},
+  {emoji:'🔥',name:'On Fire',        desc:'Answer 10 in a row correctly',  earned: true},
+  {emoji:'🧠',name:'Knowledge Graph',desc:'Cover all 5 topic areas',       earned: true},
+  {emoji:'🌟',name:'First Quiz',     desc:'Complete your first quiz',       earned: true},
+  {emoji:'📚',name:'Study Streak',   desc:'Practice 3 days in a row',      earned: false},
+];
+const bgEl=document.getElementById('badgesGrid');
+let earned=0;
+ACHIEVEMENTS.forEach((a,i)=>{
+  if(a.earned) earned++;
+  const d=document.createElement('div');
+  d.className='badge-card'+(a.earned?' earned':'');
+  d.innerHTML=`${a.earned&&i<3?'<div class="badge-new">NEW</div>':''}
+    <span class="badge-emoji">${a.emoji}</span>
+    <div class="badge-name">${a.name}</div>
+    <div class="badge-desc">${a.desc}</div>`;
+  bgEl.appendChild(d);
+});
+document.getElementById('badgeCount').textContent=`${earned} earned`;
+
+/* ═══════ REVIEW LIST ═══════ */
+const revEl=document.getElementById('reviewList');
+const LETTERS=['A','B','C','D'];
+document.getElementById('wrongCount').textContent=`${RESULT.wrongQs.length} questions`;
+RESULT.wrongQs.forEach((wq,wi)=>{
+  const item=document.createElement('div');
+  item.className='rev-item';
+  // options HTML
+  const optsHtml=wq.opts.map((o,i)=>{
+    let cls='rev-opt';
+    if(i===wq.ans) cls+=' rc';
+    else if(i===wq.userAns) cls+=' rw';
+    const icon=i===wq.ans?' ✓':i===wq.userAns?' ✗':'';
+    return `<div class="${cls}"><span class="rev-letter">${LETTERS[i]}</span>${o}${icon?` <strong>${icon}</strong>`:''}</div>`;
+  }).join('');
+  // why rows
+  const whyHtml=wq.why.map((w,i)=>{
+    const correct=i===wq.ans;
+    return `<div class="why-row"><strong style="color:${correct?'var(--teal)':'var(--red)'}">${correct?'✓':'✗'} Option ${LETTERS[i]}:</strong> ${w.replace(/^[A-D] – /,'')}</div>`;
+  }).join('');
+  item.innerHTML=`
+    <div class="rev-trigger" onclick="toggleRev(this)">
+      <div class="rev-num">Q${wq.n}</div>
+      <div class="rev-q">${wq.q}</div>
+      <div class="rev-arrow">›</div>
+    </div>
+    <div class="rev-body">
+      <div class="rev-opts-row">${optsHtml}</div>
+      <div class="explain-box">
+        <div class="explain-lbl">💡 AI Explanation</div>
+        <div class="explain-txt">${wq.explain}</div>
+      </div>
+      <div class="why-mini" style="margin-top:12px">${whyHtml}</div>
+    </div>`;
+  revEl.appendChild(item);
+});
+function toggleRev(trigger){
+  trigger.closest('.rev-item').classList.toggle('open');
+}
+</script>
+</body>
+</html>

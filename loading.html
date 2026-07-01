@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASAPMCQ — Generating Questions</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-void:#03040A;--bg-deep:#060814;
+  --violet:#8B5CF6;--violet-bright:#A78BFA;--cyan:#22D3EE;--teal:#14F195;--magenta:#FF4FD8;
+  --text-primary:#F8FAFC;--text-secondary:#A1A8C5;--text-tertiary:#5D6280;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg-void);color:var(--text-primary);font-family:'Inter',sans-serif;overflow:hidden;height:100%;width:100%;}
+
+.bg-grad{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(139,92,246,.22),transparent 65%),
+  radial-gradient(ellipse 50% 40% at 80% 80%,rgba(34,211,238,.1),transparent 60%),
+  linear-gradient(180deg,var(--bg-void),var(--bg-deep) 50%,var(--bg-void));}
+#stars{position:fixed;inset:0;z-index:1;}
+.nebula{position:fixed;inset:0;z-index:2;
+  background:radial-gradient(ellipse 60% 40% at 30% 30%,rgba(139,92,246,.13),transparent 70%),
+  radial-gradient(ellipse 50% 35% at 75% 65%,rgba(255,79,216,.08),transparent 70%);
+  filter:blur(50px);animation:nebDrift 30s ease-in-out infinite alternate;}
+@keyframes nebDrift{0%{transform:translate(0,0) scale(1);}100%{transform:translate(2%,-3%) scale(1.06);}}
+.grid-fade{position:fixed;inset:0;z-index:3;
+  background-image:linear-gradient(rgba(248,250,252,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(248,250,252,.02) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(ellipse 65% 65% at 50% 50%,black 0%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 65% 65% at 50% 50%,black 0%,transparent 75%);}
+#blobs{position:fixed;inset:0;z-index:2;pointer-events:none;}
+#particles{position:fixed;inset:0;z-index:4;pointer-events:none;}
+
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.2s ease;}
+.screen.fade-out{opacity:0;pointer-events:none;}
+
+.logo{position:absolute;top:28px;left:50%;transform:translateX(-50%);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;background:linear-gradient(90deg,#fff,#C4B5FD);-webkit-background-clip:text;background-clip:text;color:transparent;}
+
+/* ── AI CORE ── */
+.core-wrap{position:relative;width:240px;height:240px;flex-shrink:0;margin-bottom:52px;}
+.blob-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.55),rgba(139,92,246,.12) 50%,transparent 72%);filter:blur(8px);animation:coreBreath 3.5s ease-in-out infinite;}
+@keyframes coreBreath{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.8;}50%{transform:translate(-50%,-50%) scale(1.18);opacity:1;}}
+.ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1.5px solid transparent;transform:translate(-50%,-50%);}
+.ring-1{width:240px;height:240px;border-color:rgba(139,92,246,.28);animation:spinR 22s linear infinite;}
+.ring-2{width:190px;height:190px;border-color:rgba(34,211,238,.22);animation:spinR 15s linear infinite reverse;}
+.ring-3{width:140px;height:140px;border-color:rgba(255,79,216,.2);animation:spinR 9s linear infinite;}
+.ring-4{width:90px;height:90px;border-color:rgba(20,241,149,.25);animation:spinR 5.5s linear infinite reverse;}
+@keyframes spinR{to{transform:translate(-50%,-50%) rotate(360deg);}}
+.ring::before{content:'';position:absolute;border-radius:50%;top:-4px;left:50%;margin-left:-4px;width:8px;height:8px;}
+.ring::after{content:'';position:absolute;border-radius:50%;bottom:-4px;left:50%;margin-left:-4px;width:5px;height:5px;opacity:.5;}
+.ring-1::before{background:var(--violet-bright);box-shadow:0 0 14px 4px var(--violet-bright);}
+.ring-2::before{background:var(--cyan);box-shadow:0 0 12px 3px var(--cyan);}
+.ring-3::before{background:var(--magenta);box-shadow:0 0 12px 3px var(--magenta);}
+.ring-4::before{background:var(--teal);box-shadow:0 0 10px 3px var(--teal);}
+.ring-1::after{background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+.ring-2::after{background:var(--magenta);box-shadow:0 0 6px var(--magenta);}
+.ring-3::after{background:var(--teal);box-shadow:0 0 7px var(--teal);}
+.ring-4::after{background:var(--violet-bright);box-shadow:0 0 6px var(--violet-bright);}
+.core-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#fff 20%,var(--violet-bright) 60%,transparent);box-shadow:0 0 30px 8px rgba(167,139,250,.85),0 0 60px 16px rgba(139,92,246,.35);animation:coreBreath 3.5s ease-in-out infinite;}
+
+/* ── STATUS ── */
+.status-wrap{text-align:center;width:380px;max-width:90vw;}
+.status-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 18px;border-radius:999px;margin-bottom:22px;border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.08);color:var(--violet-bright);font-size:13px;font-weight:500;}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);animation:bdBlink 1.4s ease-in-out infinite;}
+@keyframes bdBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.status-text{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:clamp(18px,2.8vw,24px);line-height:1.3;color:var(--text-primary);margin-bottom:8px;min-height:34px;transition:opacity .35s ease,transform .35s ease;}
+.status-text.fade{opacity:0;transform:translateY(7px);}
+.status-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-tertiary);margin-bottom:38px;min-height:18px;transition:opacity .35s ease;}
+.status-sub.fade{opacity:0;}
+
+/* ── PROGRESS ── */
+.progress-wrap{width:360px;max-width:88vw;}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.progress-label{font-size:12px;color:var(--text-tertiary);font-weight:500;transition:opacity .3s;}
+.progress-pct{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--violet-bright);font-weight:500;}
+.progress-track{height:5px;border-radius:999px;background:rgba(248,250,252,.08);overflow:visible;position:relative;}
+.progress-fill{height:100%;border-radius:999px;width:0%;background:linear-gradient(90deg,var(--violet),var(--cyan),var(--teal));background-size:200% 100%;animation:gradMove 2.5s linear infinite;transition:width .55s cubic-bezier(.4,0,.2,1);position:relative;}
+@keyframes gradMove{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+.progress-fill::after{content:'';position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:13px;height:13px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px 5px rgba(34,211,238,.75);}
+.step-dots{display:flex;justify-content:space-between;margin-top:12px;}
+.step-dot{width:5px;height:5px;border-radius:50%;background:rgba(248,250,252,.12);transition:background .4s,box-shadow .4s;}
+.step-dot.done{background:var(--violet-bright);box-shadow:0 0 6px rgba(167,139,250,.7);}
+
+.complete-flash{position:fixed;inset:0;z-index:20;background:radial-gradient(circle,rgba(139,92,246,.3),transparent 70%);opacity:0;pointer-events:none;transition:opacity .5s ease;}
+.complete-flash.show{opacity:1;}
+
+#cur{position:fixed;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.9),transparent 70%);pointer-events:none;z-index:999;transform:translate(-50%,-50%);mix-blend-mode:screen;}
+#cur-g{position:fixed;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.09),transparent 70%);pointer-events:none;z-index:998;transform:translate(-50%,-50%);filter:blur(8px);}
+</style>
+</head>
+<body>
+<div class="bg-grad"></div>
+<canvas id="stars"></canvas>
+<div class="nebula"></div>
+<div class="grid-fade"></div>
+<canvas id="blobs"></canvas>
+<canvas id="particles"></canvas>
+<div class="complete-flash" id="flash"></div>
+<div id="cur"></div><div id="cur-g"></div>
+
+<div class="screen" id="screen">
+  <div class="logo">ASAPMCQ</div>
+
+  <div class="core-wrap">
+    <div class="blob-glow"></div>
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <div class="ring ring-4"></div>
+    <div class="core-center"></div>
+  </div>
+
+  <div class="status-wrap">
+    <div class="status-badge"><span class="badge-dot"></span>LET it cook</div>
+    <div class="status-text" id="statusText">Parsing your study material…</div>
+    <div class="status-sub"  id="statusSub">Reading PDF structure and layout</div>
+
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span class="progress-label" id="pLabel">Initialising…</span>
+        <span class="progress-pct"   id="pPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="pFill"></div></div>
+      <div class="step-dots" id="stepDots"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── STARS ── */
+const mcqs = JSON.parse(localStorage.getItem("mcqs"));
+
+if (!mcqs) {
+    window.location.href = "generator.html";
+}
+
+const sc=document.getElementById('stars'),sx=sc.getContext('2d');let strs=[];
+function sS(){sc.width=innerWidth;sc.height=innerHeight;strs=Array.from({length:170},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.3+.2,a:Math.random(),s:Math.random()*.013+.003}));}
+sS();window.addEventListener('resize',sS);
+(function dS(){sx.clearRect(0,0,sc.width,sc.height);for(const s of strs){s.a+=s.s;const o=((Math.sin(s.a)+1)/2)*.75+.2;sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);sx.fillStyle=`rgba(248,250,252,${o})`;sx.fill();}requestAnimationFrame(dS);})();
+
+/* ── BLOBS ── */
+const bc=document.getElementById('blobs'),bx=bc.getContext('2d');
+const BLOBS=[{x:.25,y:.3,r:180,c:'139,92,246',a:.06,sp:.0004,ph:0},{x:.75,y:.6,r:140,c:'34,211,238',a:.04,sp:.0006,ph:2},{x:.5,y:.8,r:120,c:'255,79,216',a:.035,sp:.0003,ph:4},{x:.15,y:.75,r:100,c:'20,241,149',a:.03,sp:.0005,ph:1}];
+let bt=0;
+function sB(){bc.width=innerWidth;bc.height=innerHeight;}sB();window.addEventListener('resize',sB);
+(function dB(){bx.clearRect(0,0,bc.width,bc.height);bt++;BLOBS.forEach(b=>{const ox=Math.sin(bt*b.sp+b.ph)*40,oy=Math.cos(bt*b.sp*.7+b.ph)*30;const g=bx.createRadialGradient(bc.width*b.x+ox,bc.height*b.y+oy,0,bc.width*b.x+ox,bc.height*b.y+oy,b.r);g.addColorStop(0,`rgba(${b.c},${b.a})`);g.addColorStop(1,'rgba(0,0,0,0)');bx.beginPath();bx.arc(bc.width*b.x+ox,bc.height*b.y+oy,b.r,0,Math.PI*2);bx.fillStyle=g;bx.fill();});requestAnimationFrame(dB);})();
+
+/* ── PARTICLES ── */
+const pc=document.getElementById('particles'),px=pc.getContext('2d');
+const PCOLS=['139,92,246','34,211,238','20,241,149','255,79,216'];let pts=[];
+function sP(){pc.width=innerWidth;pc.height=innerHeight;pts=Array.from({length:55},(_,i)=>({x:Math.random()*pc.width,y:Math.random()*pc.height,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*2+.4,ci:i%4}));}
+sP();window.addEventListener('resize',sP);
+(function dP(){px.clearRect(0,0,pc.width,pc.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;px.beginPath();px.arc(p.x,p.y,p.r,0,Math.PI*2);px.fillStyle=`rgba(${PCOLS[p.ci]},.45)`;px.fill();});requestAnimationFrame(dP);})();
+
+/* ── CURSOR ── */
+const cur=document.getElementById('cur'),cg=document.getElementById('cur-g');
+window.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px';});
+
+/* ── STEP DOTS ── */
+const NSTEPS=8;
+const dotWrap=document.getElementById('stepDots');
+for(let i=0;i<NSTEPS;i++){const d=document.createElement('div');d.className='step-dot';d.id='sd'+i;dotWrap.appendChild(d);}
+
+/* ── MESSAGES ── */
+const MSGS=[
+  {text:'Parsing your study material…',     sub:'Reading PDF structure and layout',           pct:0,   lbl:'Initialising…'},
+  {text:'Extracting key concepts…',          sub:'Identifying topics, terms & definitions',    pct:13,  lbl:'Parsing PDF…'},
+  {text:'Building knowledge graph…',         sub:'Mapping concept relationships & hierarchy',  pct:26,  lbl:'Extracting…'},
+  {text:'Generating question stems…',        sub:'Crafting exam-level question structures',    pct:40,  lbl:'Mapping…'},
+  {text:'Constructing answer options…',      sub:'Building plausible distractors per question',pct:55,  lbl:'Generating…'},
+  {text:'Validating answer accuracy…',       sub:'Cross-referencing against source material',  pct:70,  lbl:'Validating…'},
+  {text:'Writing AI explanations…',          sub:'Preparing why each option is right or wrong',pct:84,  lbl:'Explaining…'},
+  {text:'Finalising your MCQ set ✦',         sub:'Almost ready — packaging your questions',    pct:95,  lbl:'Finalising…'},
+];
+
+const stEl=document.getElementById('statusText');
+const ssEl=document.getElementById('statusSub');
+const pFill=document.getElementById('pFill');
+const pPct=document.getElementById('pPct');
+const pLabel=document.getElementById('pLabel');
+
+let animPct=0,targetPct=0;
+(function animLoop(){
+  if(animPct<targetPct){animPct=Math.min(animPct+1.4,targetPct);pFill.style.width=animPct+'%';pPct.textContent=Math.floor(animPct)+'%';}
+  requestAnimationFrame(animLoop);
+})();
+
+function setMsg(i){
+  stEl.classList.add('fade');ssEl.classList.add('fade');
+  setTimeout(()=>{stEl.textContent=MSGS[i].text;ssEl.textContent=MSGS[i].sub;stEl.classList.remove('fade');ssEl.classList.remove('fade');},380);
+  pLabel.textContent=MSGS[i].lbl;
+  targetPct=MSGS[i].pct;
+  for(let d=0;d<i;d++) document.getElementById('sd'+d).classList.add('done');
+}
+setMsg(0);
+let mi=0;
+const mt=setInterval(()=>{mi++;if(mi<MSGS.length)setMsg(mi);else clearInterval(mt);},2500);
+
+/* ── FINISH ── */
+setTimeout(()=>{
+  stEl.classList.add('fade');
+  setTimeout(()=>{stEl.textContent='MCQs ready — loading quiz…';stEl.classList.remove('fade');},400);
+  targetPct=100;
+  pLabel.textContent='Complete!';
+  for(let d=0;d<NSTEPS;d++) document.getElementById('sd'+d).classList.add('done');
+  setTimeout(()=>{
+    document.getElementById('flash').classList.add('show');
+    setTimeout(()=>{
+      document.getElementById('screen').classList.add('fade-out');
+      setTimeout(()=>{window.location.href='quiz.html';},1300);
+    },450);
+  },900);
+},MSGS.length*2500+700);
+</script>
+</body>
+</html>
