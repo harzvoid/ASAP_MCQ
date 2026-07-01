@@ -379,14 +379,14 @@ RESULT.topics.forEach(t=>{
 
 /* ═══════ ACHIEVEMENTS ═══════ */
 const ACHIEVEMENTS=[
-  {emoji:'🏆',name:'High Achiever',  desc:'Score 90% or above',          earned: ACC>=90},
-  {emoji:'⚡',name:'Speed Demon',    desc:'Finish in under 20 minutes',   earned: RESULT.timeSecs<20*60},
-  {emoji:'💎',name:'Perfect Chapter',desc:'100% in any single topic',     earned: RESULT.topics.some(t=>t.correct===t.total)},
-  {emoji:'🎯',name:'Accuracy King',  desc:'Achieve 95%+ accuracy',        earned: ACC>=95},
-  {emoji:'🔥',name:'On Fire',        desc:'Answer 10 in a row correctly',  earned: true},
-  {emoji:'🧠',name:'Knowledge Graph',desc:'Cover all 5 topic areas',       earned: true},
-  {emoji:'🌟',name:'First Quiz',     desc:'Complete your first quiz',       earned: true},
-  {emoji:'📚',name:'Study Streak',   desc:'Practice 3 days in a row',      earned: false},
+  {emoji:'🏆',name:'HAWKEYE',  desc:'Score 90% or above',          earned: ACC>=90},
+  {emoji:'⚡',name:'XLR8',    desc:'Finish in under 20 minutes',   earned: RESULT.timeSecs<20*60},
+  {emoji:'💎',name:'LEFT NO CRUMBS',desc:'100% in any single topic',     earned: RESULT.topics.some(t=>t.correct===t.total)},
+  {emoji:'🎯',name:'BULLSEYE',  desc:'Achieve 95%+ accuracy',        earned: ACC>=95},
+  {emoji:'🔥',name:'CLEAN SWEEP GNGG',   desc:'Answer 10 in a row correctly',  earned: true},
+  {emoji:'🧠',name:'GOATED',desc:'Cover all 5 topic areas',       earned: true},
+  {emoji:'🌟',name:'FRESHIEEEE',     desc:'Complete your first quiz',       earned: true},
+  {emoji:'📚',name:'PUNCTUALITY I',   desc:'Practice 3 days in a row',      earned: false},
 ];
 const bgEl=document.getElementById('badgesGrid');
 let earned=0;

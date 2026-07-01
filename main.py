@@ -50,7 +50,8 @@ Format:
     "answer": "...",
     "explanation": "..."
   }}
-]"""
+]
+"""
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -68,9 +69,21 @@ Format:
 
         mcqs = json.loads(cleaned)
 
+        formatted = []
+
+        for item in mcqs:
+            formatted.append({
+                "q": item["question"],
+                "opts": item["options"],
+                "ans": item["options"].index(item["answer"]),
+                "explain": item["explanation"],
+                "why": ["", "", "", ""],
+                "topic": data.topic
+            })
+
         return {
             "topic": data.topic,
-            "mcqs": mcqs
+            "mcqs": formatted
         }
 
     except Exception:
