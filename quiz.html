@@ -690,22 +690,68 @@ function submitQuiz(){
 
   // grade
   let grade,gradeClass;
-  if(acc>=90){grade='S — Excellent';gradeClass='grade-s';}
-  else if(acc>=80){grade='A — Great';gradeClass='grade-a';}
-  else if(acc>=65){grade='B — Good';gradeClass='grade-b';}
-  else if(acc>=50){grade='C — Average';gradeClass='grade-c';}
-  else{grade='F — Keep Practising';gradeClass='grade-f';}
+  if(acc>=90){
+    grade='S — Excellent';
+    gradeClass='gS';
+}
+else if(acc>=80){
+    grade='A — Great';
+    gradeClass='gA';
+}
+else if(acc>=65){
+    grade='B — Good';
+    gradeClass='gB';
+}
+else if(acc>=50){
+    grade='C — Average';
+    gradeClass='gC';
+}
+else{
+    grade='F — Keep Practising';
+    gradeClass='gF';
+}
 
-  const quizResults = {
+  const wrongQs = [];
+
+QUESTIONS.forEach((q, i) => {
+    if (answers[i] !== q.ans) {
+
+        wrongQs.push({
+            n: i + 1,
+            q: q.q,
+            opts: q.opts,
+            ans: q.ans,
+            userAns: answers[i],
+            explain: q.explain,
+            why: q.why
+        });
+
+    }
+});
+
+const topics = Object.entries(topicMap).map(([name, value]) => ({
+    name,
+    correct: value.correct,
+    total: value.total
+}));
+
+const quizResults = {
     correct,
     total,
     skipped,
     accuracy: acc,
     grade,
     gradeClass,
+
     time: timeStr,
+    timeSecs: timeUsed,
+
     weak,
     strong,
+
+    topics,
+    wrongQs,
+
     answers,
     marked,
     questions: QUESTIONS
@@ -716,7 +762,7 @@ localStorage.setItem(
     JSON.stringify(quizResults)
 );
 
-window.location.href="/result";
+window.location.href = "/result";
 }
 /* ════════════════════════════════
    REVIEW LIST — clicking incorrect

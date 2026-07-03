@@ -160,7 +160,7 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
 
 <nav>
   <div class="logo">ASAPMCQ</div>
-  <div class="nav-tag">Results · Database Management</div>
+  <div class="nav-tag" id="navTag"></div>
   <button class="nbtn" onclick="location.href='/quiz'">↺ Practice Again</button>
 </nav>
 
@@ -194,13 +194,31 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
         <div class="score-badge">✦ Quiz Complete</div>
         <div class="grade-pill gA" id="gradePill">A — Great</div>
       </div>
-      <div class="score-headline">You scored <span class="grad-text" id="scoreText">23 / 25</span></div>
-      <p class="score-sub">Strong performance overall. You've demonstrated solid command of most topics — review the 2 incorrect answers below to close the remaining gaps.</p>
+      <div class="score-headline">
+    You scored <span class="grad-text" id="scoreText"></span>
+</div>
+
+<p class="score-sub" id="scoreSub"></p>
       <div class="stat-chips">
-        <div class="stat-chip"><span class="stat-val" style="color:var(--teal)">92%</span><span class="stat-lbl">Accuracy</span></div>
-        <div class="stat-chip"><span class="stat-val" style="color:var(--amber)">18:42</span><span class="stat-lbl">Time Taken</span></div>
-        <div class="stat-chip"><span class="stat-val" style="color:var(--violet-bright)">Medium</span><span class="stat-lbl">Difficulty</span></div>
-        <div class="stat-chip"><span class="stat-val" style="color:var(--cyan)">2</span><span class="stat-lbl">Incorrect</span></div>
+      <div class="stat-chip">
+    <span class="stat-val" id="accStat" style="color:var(--teal)"></span>
+    <span class="stat-lbl">Accuracy</span>
+</div>
+
+<div class="stat-chip">
+    <span class="stat-val" id="timeStat" style="color:var(--amber)"></span>
+    <span class="stat-lbl">Time Taken</span>
+</div>
+
+<div class="stat-chip">
+    <span class="stat-val" id="diffStat" style="color:var(--violet-bright)"></span>
+    <span class="stat-lbl">Difficulty</span>
+</div>
+
+<div class="stat-chip">
+    <span class="stat-val" id="wrongStat" style="color:var(--cyan)"></span>
+    <span class="stat-lbl">Incorrect</span>
+</div>
       </div>
     </div>
   </div>
@@ -262,8 +280,29 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
 
 <script>
 /* ═══════ STARS / PARTICLES ═══════ */
-const result =
-JSON.parse(localStorage.getItem("quizResults"));
+
+const result = JSON.parse(localStorage.getItem("quizResults"));
+const RESULT = result;
+
+document.getElementById("navTag").textContent =
+    `Results · ${RESULT.questions[0].topic}`;
+
+document.getElementById("accStat").textContent =
+    RESULT.accuracy + "%";
+
+document.getElementById("timeStat").textContent =
+    RESULT.time;
+
+document.getElementById("diffStat").textContent =
+    "Mixed"; // We'll make this dynamic later.
+
+document.getElementById("wrongStat").textContent =
+    RESULT.total - RESULT.correct;
+
+if (!result) {
+    window.location.href = "/generator";
+}
+
 const sc=document.getElementById('stars'),sx=sc.getContext('2d');let strs=[];
 function sS(){sc.width=innerWidth;sc.height=innerHeight;strs=Array.from({length:150},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.2+.2,a:Math.random(),s:Math.random()*.012+.003}));}
 sS();window.addEventListener('resize',sS);
@@ -277,33 +316,6 @@ const cur=document.getElementById('cur'),cg=document.getElementById('cur-g');
 window.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px';});
 
 /* ═══════ RESULT DATA ═══════ */
-const RESULT={
-  correct:23, total:25, timeSecs:18*60+42,
-  difficulty:'Medium',
-  topics:[
-    {name:'Databases',           correct:5, total:5},
-    {name:'Data Structures',     correct:5, total:5},
-    {name:'Algorithms',          correct:4, total:5},
-    {name:'Operating Systems',   correct:5, total:5},
-    {name:'Networking',          correct:4, total:5},
-  ],
-  wrongQs:[
-    {
-      n:11, q:'What algorithm paradigm does Merge Sort use?',
-      opts:['Greedy','Dynamic Programming','Divide and Conquer','Backtracking'],
-      ans:2, userAns:0,
-      explain:'Merge Sort uses Divide and Conquer: it recursively splits the array in half, sorts each half, and merges them back in order.',
-      why:["A – Greedy algorithms pick the locally optimal choice at each step (e.g. Dijkstra's).","B – Dynamic Programming stores subproblem results; Merge Sort doesn't.","C – Correct. Merge Sort splits, sorts recursively, and merges — classic D&C.","D – Backtracking explores all possibilities (e.g. N-Queens), not sorting."],
-    },
-    {
-      n:22, q:'Which layer of the OSI model is responsible for end-to-end communication?',
-      opts:['Network Layer (3)','Data Link Layer (2)','Transport Layer (4)','Session Layer (5)'],
-      ans:2, userAns:0,
-      explain:'The Transport Layer (Layer 4) provides end-to-end communication between processes. TCP at this layer ensures reliable delivery, ordering, and error recovery.',
-      why:['A – Network Layer handles logical addressing (IP) and routing, not end-to-end process communication.','B – Data Link Layer manages node-to-node delivery on a local link via MAC addresses.','C – Correct. Transport Layer (TCP/UDP) manages end-to-end transfer and error recovery.','D – Session Layer manages sessions and dialogues, not transport-level error recovery.'],
-    },
-  ],
-};
 
 const ACC = Math.round(RESULT.correct/RESULT.total*100);
 
@@ -315,10 +327,32 @@ function getGrade(acc){
   if(acc>=50) return {text:'C — Average',    cls:'gC'};
   return              {text:'F — Keep Going', cls:'gF'};
 }
-const grade=getGrade(ACC);
-document.getElementById('gradePill').textContent=grade.text;
-document.getElementById('gradePill').className='grade-pill '+grade.cls;
-document.getElementById('scoreText').textContent=`${RESULT.correct} / ${RESULT.total}`;
+
+document.getElementById("gradePill").textContent =
+    RESULT.grade;
+
+document.getElementById("gradePill").className =
+    "grade-pill " + RESULT.gradeClass;
+
+document.getElementById("scoreText").textContent =
+    `${RESULT.correct} / ${RESULT.total}`;
+
+let msg = "";
+
+if (RESULT.accuracy >= 90) {
+    msg = "Outstanding performance! You have mastered this topic. Keep challenging yourself with harder questions.";
+}
+else if (RESULT.accuracy >= 75) {
+    msg = "Great job! Your fundamentals are strong. Review the incorrect questions to reach mastery.";
+}
+else if (RESULT.accuracy >= 50) {
+    msg = "Good progress. Spend some time revising the weaker concepts and try another quiz.";
+}
+else {
+    msg = "Every attempt helps you improve. Review the explanations carefully and practice again.";
+}
+
+document.getElementById("scoreSub").textContent = msg;
 
 /* ═══════ ANIMATED RING + COUNTER ═══════ */
 const CIRC=2*Math.PI*90; // 565.48

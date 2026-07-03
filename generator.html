@@ -764,6 +764,27 @@ async function startGenerate() {
 
         const data = await response.json();
 
+console.log("Backend Response:", data);
+console.log("MCQS:", data.mcqs);
+
+if (!data.mcqs) {
+    alert("Backend did not return MCQs.");
+    return;
+}
+
+localStorage.setItem("mcqs", JSON.stringify(data.mcqs));
+
+console.log("Saved:", localStorage.getItem("mcqs"));
+
+clearInterval(loading);
+
+bar.style.width = "100%";
+stepEl.textContent = "MCQs Generated Successfully ✓";
+
+setTimeout(() => {
+    window.location.href = "/loading";
+}, 700);
+
         clearInterval(loading);
 
         bar.style.width = "100%";
