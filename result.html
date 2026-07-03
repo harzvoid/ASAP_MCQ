@@ -161,7 +161,7 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
 <nav>
   <div class="logo">ASAPMCQ</div>
   <div class="nav-tag">Results · Database Management</div>
-  <button class="nbtn" onclick="location.href='quiz.html'">↺ Practice Again</button>
+  <button class="nbtn" onclick="location.href='/quiz'">↺ Practice Again</button>
 </nav>
 
 <div class="page">
@@ -253,15 +253,17 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
 
   <!-- ⑥  ACTION BUTTONS ─────────────────── -->
   <div class="actions">
-    <button class="abtn abtn-primary" onclick="location.href='loading.html'"><span class="ai">↺</span><span class="al">Practice Again</span></button>
-    <button class="abtn abtn-cyan"    onclick="location.href='generator.html'"><span class="ai">⌂</span><span class="al">Dashboard</span></button>
-    <button class="abtn abtn-ghost"   onclick="location.href='index.html'"><span class="ai">🏠</span><span class="al">Home</span></button>
+    <button class="abtn abtn-primary" onclick="location.href='/loading'"><span class="ai">↺</span><span class="al">Practice Again</span></button>
+    <button class="abtn abtn-cyan"    onclick="location.href='/generator'"><span class="ai">⌂</span><span class="al">Dashboard</span></button>
+    <button class="abtn abtn-ghost"   onclick="location.href='/index'"><span class="ai">🏠</span><span class="al">Home</span></button>
   </div>
 
 </div><!-- /page -->
 
 <script>
 /* ═══════ STARS / PARTICLES ═══════ */
+const result =
+JSON.parse(localStorage.getItem("quizResults"));
 const sc=document.getElementById('stars'),sx=sc.getContext('2d');let strs=[];
 function sS(){sc.width=innerWidth;sc.height=innerHeight;strs=Array.from({length:150},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.2+.2,a:Math.random(),s:Math.random()*.012+.003}));}
 sS();window.addEventListener('resize',sS);

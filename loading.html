@@ -132,7 +132,7 @@ html,body{background:var(--bg-void);color:var(--text-primary);font-family:'Inter
 const mcqs = JSON.parse(localStorage.getItem("mcqs"));
 
 if (!mcqs) {
-    window.location.href = "generator.html";
+    window.location.href ="/generator";
 }
 
 const sc=document.getElementById('stars'),sx=sc.getContext('2d');let strs=[];
@@ -209,7 +209,7 @@ setTimeout(()=>{
     document.getElementById('flash').classList.add('show');
     setTimeout(()=>{
       document.getElementById('screen').classList.add('fade-out');
-      setTimeout(()=>{window.location.href='quiz.html';},1300);
+      setTimeout(()=>{window.location.href='/quiz';},1300);
     },450);
   },900);
 },MSGS.length*2500+700);

@@ -378,14 +378,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 <div id="cursor-glow"></div>
 
 <!-- NAVBAR -->
-<nav>
-  <div class="logo">ASAPMCQ</div>
-  <div class="nav-center" id="navCenter">Database Management · 25 Questions</div>
-  <div class="nav-right">
-    <button class="nav-btn nav-btn-ghost" onclick="showConfirm()">⚑ Submit</button>
-    <button class="nav-btn nav-btn-danger" onclick="if(confirm('Exit quiz? Progress will be lost.'))location.reload()">✕ Exit</button>
-  </div>
-</nav>
+<button class="nav-btn nav-btn-danger"
+onclick="if(confirm('Exit quiz? Progress will be lost.')){
+localStorage.removeItem('quizResults');
+localStorage.removeItem('mcqs');
+window.location.href='/generator';
+}">
+✕ Exit
+</button>
 
 <!-- QUIZ VIEW -->
 <div class="quiz-layout" id="quizView">
@@ -457,47 +457,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 
 </div>
 
-<!-- RESULTS VIEW -->
-<div id="resultsView">
-  <div class="results-card">
-    <div class="res-top">
-      <div class="res-badge">✦ Quiz Complete</div>
-      <div class="res-score-big gradient-text" id="resBigScore">18 / 25</div>
-      <div class="res-score-label">Final Score</div>
-      <div class="res-grade" id="resGrade">B</div>
-    </div>
-    <div class="res-stats">
-      <div class="res-stat">
-        <div class="res-stat-val" style="color:var(--teal)" id="resAccuracy">72%</div>
-        <div class="res-stat-lbl">Accuracy</div>
-      </div>
-      <div class="res-stat">
-        <div class="res-stat-val" style="color:var(--amber)" id="resTime">—</div>
-        <div class="res-stat-lbl">Time Used</div>
-      </div>
-      <div class="res-stat">
-        <div class="res-stat-val" style="color:var(--red)" id="resSkipped">0</div>
-        <div class="res-stat-lbl">Skipped</div>
-      </div>
-    </div>
-    <div class="res-body">
-      <div class="res-section">
-        <div class="res-sec-title">Weak Topics</div>
-        <div class="topic-tags" id="weakTopics"></div>
-      </div>
-      <div class="res-section">
-        <div class="res-sec-title">Strong Topics</div>
-        <div class="topic-tags" id="strongTopics"></div>
-      </div>
-      <div class="res-actions">
-        <button class="res-btn res-btn-primary" onclick="showReviewList()">📋 Review Incorrect Questions</button>
-        <button class="res-btn res-btn-ghost" onclick="location.reload()">↺ Restart Quiz</button>
-        <button class="res-btn res-btn-ghost" onclick="location.href='generator.html'">⌂ Dashboard</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- REVIEW OVERLAY -->
 <div id="reviewOverlay" onclick="e=>e.target===this&&closeReview()">
   <div class="review-card" id="reviewCard">
@@ -537,7 +496,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 /* ════════════════════════════════════
    QUIZ DATA  (25 questions, 5 topics)
    ════════════════════════════════════ */
-const QUESTIONS = JSON.parse(localStorage.getItem("mcqs")) || [];
+const QUESTIONS = JSON.parse(localStorage.getItem("mcqs"));
+
+if (!QUESTIONS || QUESTIONS.length === 0) {
+    window.location.href="/generator";
+}
+
+const params=new URLSearchParams(location.search);
+
+const reviewMode=params.get("review")==="true";
 /* ════════════════════════════════
    STATE
    ════════════════════════════════ */
@@ -729,26 +696,28 @@ function submitQuiz(){
   else if(acc>=50){grade='C — Average';gradeClass='grade-c';}
   else{grade='F — Keep Practising';gradeClass='grade-f';}
 
-  // populate results
-  document.getElementById('resBigScore').textContent=`${correct} / ${total}`;
-  document.getElementById('resAccuracy').textContent=acc+'%';
-  document.getElementById('resTime').textContent=timeStr;
-  document.getElementById('resSkipped').textContent=skipped;
-  const gradeEl=document.getElementById('resGrade');
-  gradeEl.textContent=grade;
-  gradeEl.className='res-grade '+gradeClass;
+  const quizResults = {
+    correct,
+    total,
+    skipped,
+    accuracy: acc,
+    grade,
+    gradeClass,
+    time: timeStr,
+    weak,
+    strong,
+    answers,
+    marked,
+    questions: QUESTIONS
+};
 
-  document.getElementById('weakTopics').innerHTML=
-    weak.length?weak.map(t=>`<span class="topic-tag tag-weak">✗ ${t}</span>`).join(''):'<span style="color:var(--text-tertiary);font-size:13px">None — great work!</span>';
-  document.getElementById('strongTopics').innerHTML=
-    strong.length?strong.map(t=>`<span class="topic-tag tag-strong">✓ ${t}</span>`).join(''):'<span style="color:var(--text-tertiary);font-size:13px">Keep practising!</span>';
+localStorage.setItem(
+    "quizResults",
+    JSON.stringify(quizResults)
+);
 
-  // switch views
-  document.getElementById('quizView').style.display='none';
-  document.getElementById('resultsView').classList.add('show');
-  refreshNav();
+window.location.href="/result";
 }
-
 /* ════════════════════════════════
    REVIEW LIST — clicking incorrect
    ════════════════════════════════ */
@@ -853,6 +822,8 @@ document.getElementById('navGrid').addEventListener('click',function(e){
   const idx=Array.from(this.children).indexOf(cell);
   if(idx>=0) openReview(idx);
 });
+
+
 
 /* ════════════════════════════════
    INIT

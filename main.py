@@ -3,11 +3,25 @@ import os
 from dotenv import load_dotenv
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google import genai
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+
+templates = Jinja2Templates(directory=".")
 
 load_dotenv()
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
@@ -92,3 +106,37 @@ Format:
             "topic": data.topic,
             "raw_response": response.text
         }
+@app.get("/")
+def home(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html"
+    )
+
+@app.get("/generator")
+def generator(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="generator.html"
+    )
+
+@app.get("/loading")
+def loading(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="loading.html"
+    )
+
+@app.get("/quiz")
+def quiz(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="quiz.html"
+    )
+
+@app.get("/result")
+def result(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="result.html"
+    )

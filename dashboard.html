@@ -168,7 +168,7 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
   <div class="logo">ASAPMCQ</div>
   <ul class="nav-links">
     <li><a href="#" class="active">Dashboard</a></li>
-    <li><a href="generator.html">Generate</a></li>
+    <li><a href="/generator">Generate</a></li>
     <li><a href="#">History</a></li>
     <li><a href="#">Pricing</a></li>
   </ul>
@@ -184,7 +184,7 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
       <div class="welcome-title">Welcome back, <span class="grad-text">Jordan</span> ✦</div>
       <div class="welcome-sub">You're on a 12-day streak — keep the momentum going.</div>
     </div>
-    <button class="btn-continue" onclick="location.href='generator.html'">
+    <button class="btn-continue" onclick="location.href='/generator'">
       <span class="pulse"></span> Continue Studying <span class="arrow">→</span>
     </button>
   </div>
@@ -401,7 +401,7 @@ RECENT_QUIZZES.forEach(q=>{
   const color=pct>=90?'var(--teal)':pct>=70?'var(--cyan)':pct>=50?'var(--amber)':'var(--red)';
   const row=document.createElement('div');
   row.className='quiz-row';
-  row.onclick=()=>location.href='result.html';
+  row.onclick=()=>location.href='/result';
   row.innerHTML=`
     <div class="quiz-icon" style="background:${q.color}">${q.icon}</div>
     <div class="quiz-info">
@@ -420,7 +420,7 @@ WEAK_TOPICS.forEach((w,i)=>{
   div.innerHTML=`
     <div class="weak-head"><span class="weak-name">${w.name}</span><span class="weak-pct">${w.pct}%</span></div>
     <div class="weak-bar-track"><div class="weak-bar-fill" id="weakBar${i}"></div></div>
-    <div class="weak-cta" onclick="location.href='generator.html'">→ Practice this topic</div>`;
+    <div class="weak-cta" onclick="location.href='/generator'">→ Practice this topic</div>`;
   weakListEl.appendChild(div);
   setTimeout(()=>{document.getElementById('weakBar'+i).style.width=w.pct+'%';},500+i*150);
 });

@@ -700,68 +700,89 @@ setCount(25);
 /* ---- GENERATE ---- */
 const steps=['Parsing uploaded material…','Extracting key concepts…','Mapping knowledge graph…','Generating question stems…','Building answer options…','Validating distractors…','Adding AI explanations…','Finalising MCQ set…'];
 
-  const btn=document.getElementById('generateBtn');
-  btn.classList.add('loading');
-  const overlay=document.getElementById('genOverlay');
-  const stepEl=document.getElementById('overlayStep');
-  const bar=document.getElementById('overlayBar');
-  overlay.classList.add('show');
-
-async function startGenerate(){
+async function startGenerate() {
 
     const topic = document.getElementById("topicField").value.trim();
 
-    if(topic===""){
+    if (topic === "") {
         alert("Please enter a topic.");
         return;
     }
 
-    const btn=document.getElementById("generateBtn");
-    btn.classList.add("loading");
+    const btn = document.getElementById("generateBtn");
+    const overlay = document.getElementById("genOverlay");
+    const stepEl = document.getElementById("overlayStep");
+    const bar = document.getElementById("overlayBar");
 
-    const overlay=document.getElementById("genOverlay");
+    btn.classList.add("loading");
     overlay.classList.add("show");
 
-    try{
+    // Animate overlay while AI is generating
+    let progress = 0;
+    let step = 0;
 
-        const response = await fetch("http://127.0.0.1:8000/generate-mcq",{
+    stepEl.textContent = steps[0];
 
-            method:"POST",
+    const loading = setInterval(() => {
 
-            headers:{
-                "Content-Type":"application/json"
+        if (progress < 95) {
+            progress += 12;
+            bar.style.width = progress + "%";
+        }
+
+        if (step < steps.length - 1) {
+            step++;
+            stepEl.textContent = steps[step];
+        }
+
+    }, 700);
+
+    try {
+
+        const response = await fetch("http://127.0.0.1:8000/generate-mcq", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
             },
 
-            body:JSON.stringify({
+            body: JSON.stringify({
 
-                topic:topic,
-
-                difficulty:currentDiff,
-
-                count:qCount,
-
-                types:activeTypes
+                topic: topic,
+                difficulty: currentDiff,
+                count: qCount,
+                types: activeTypes
 
             })
 
         });
 
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error("Server Error");
         }
 
         const data = await response.json();
+
+        clearInterval(loading);
+
+        bar.style.width = "100%";
+        stepEl.textContent = "MCQs Generated Successfully ✓";
 
         localStorage.setItem(
             "mcqs",
             JSON.stringify(data.mcqs)
         );
 
-        window.location.href="loading.html";
+        setTimeout(() => {
+            window.location.href ="/loading";
+        }, 700);
 
     }
 
-    catch(err){
+    catch (err) {
+
+        clearInterval(loading);
 
         console.error(err);
 
@@ -769,11 +790,12 @@ async function startGenerate(){
 
     }
 
-    finally{
+    finally {
 
-        btn.classList.remove("loading");
-
-        overlay.classList.remove("show");
+        setTimeout(() => {
+            btn.classList.remove("loading");
+            overlay.classList.remove("show");
+        }, 700);
 
     }
 
