@@ -54,7 +54,7 @@ Return ONLY valid JSON.
 Format:
 
 [
-  {
+  {{
     "question": "...",
     "options": [
       "Option 1",
@@ -64,7 +64,7 @@ Format:
     ],
     "answer": 0,
     "explanation": "..."
-  }
+  }}
 ]
 """
 
