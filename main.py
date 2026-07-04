@@ -1,6 +1,7 @@
 import json
 import os
 from dotenv import load_dotenv
+import traceback
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,17 +54,17 @@ Return ONLY valid JSON.
 Format:
 
 [
-  {{
+  {
     "question": "...",
     "options": [
-      "A",
-      "B",
-      "C",
-      "D"
+      "Option 1",
+      "Option 2",
+      "Option 3",
+      "Option 4"
     ],
-    "answer": "...",
+    "answer": 0,
     "explanation": "..."
-  }}
+  }
 ]
 """
 
@@ -81,15 +82,32 @@ Format:
             .strip()
         )
 
+        print(cleaned)
         mcqs = json.loads(cleaned)
+        if not isinstance(mcqs, list):
+            raise Exception("Gemini did not return a list of MCQs.")
 
         formatted = []
 
         for item in mcqs:
+
+            answer = item["answer"].strip().upper()
+
+            if answer in ["A", "B", "C", "D"]:
+                ans_index = ord(answer) - ord("A")
+            else:
+                ans_index = next(
+                    (
+                        i for i, opt in enumerate(item["options"])
+                        if answer.lower() in opt.lower()
+                    ),
+                    0
+                )
+
             formatted.append({
                 "q": item["question"],
                 "opts": item["options"],
-                "ans": item["options"].index(item["answer"]),
+                "ans": ans_index,
                 "explain": item["explanation"],
                 "why": ["", "", "", ""],
                 "topic": data.topic
@@ -100,10 +118,12 @@ Format:
             "mcqs": formatted
         }
 
-    except Exception:
+    except Exception as e:
+        traceback.print_exc()
 
         return {
             "topic": data.topic,
+            "error": str(e),
             "raw_response": response.text
         }
 @app.get("/")
