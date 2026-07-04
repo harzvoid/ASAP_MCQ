@@ -62,7 +62,7 @@ Format:
       "Option 3",
       "Option 4"
     ],
-    "answer": 0,
+    "answer": ,
     "explanation": "..."
   }}
 ]
@@ -91,10 +91,32 @@ Format:
 
         for item in mcqs:
 
-            answer = item["answer"].strip().upper()
+                answer = item["answer"]
+
+        if isinstance(answer, int):
+            ans_index = answer
+
+        elif isinstance(answer, str):
+            answer = answer.strip().upper()
 
             if answer in ["A", "B", "C", "D"]:
                 ans_index = ord(answer) - ord("A")
+            else:
+                ans_index = next(
+            (
+                i
+                    for i, opt in enumerate(item["options"])
+                    if answer.lower() in opt.lower()
+            ),
+            0,
+        )
+
+        else:
+            ans_index = 0
+
+            if answer in ["A", "B", "C", "D"]:
+                ans_index = ord(answer) - ord("A")
+
             else:
                 ans_index = next(
                     (
@@ -119,9 +141,9 @@ Format:
         }
 
     except Exception as e:
-        traceback.print_exc()
+            traceback.print_exc()
 
-        return {
+    return {
             "topic": data.topic,
             "error": str(e),
             "raw_response": response.text
