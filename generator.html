@@ -772,6 +772,9 @@ if (!data.mcqs) {
     return;
 }
 
+console.log(data);
+console.log(data.mcqs);
+
 localStorage.setItem("mcqs", JSON.stringify(data.mcqs));
 
 console.log("Saved:", localStorage.getItem("mcqs"));

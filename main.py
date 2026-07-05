@@ -1,7 +1,6 @@
 import json
 import os
 from dotenv import load_dotenv
-import traceback
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,12 +56,12 @@ Format:
   {{
     "question": "...",
     "options": [
-      "Option 1",
-      "Option 2",
-      "Option 3",
-      "Option 4"
+      "A",
+      "B",
+      "C",
+      "D"
     ],
-    "answer": ,
+    "answer": "...",
     "explanation": "..."
   }}
 ]
@@ -82,54 +81,15 @@ Format:
             .strip()
         )
 
-        print(cleaned)
         mcqs = json.loads(cleaned)
-        if not isinstance(mcqs, list):
-            raise Exception("Gemini did not return a list of MCQs.")
 
         formatted = []
 
         for item in mcqs:
-
-                answer = item["answer"]
-
-        if isinstance(answer, int):
-            ans_index = answer
-
-        elif isinstance(answer, str):
-            answer = answer.strip().upper()
-
-            if answer in ["A", "B", "C", "D"]:
-                ans_index = ord(answer) - ord("A")
-            else:
-                ans_index = next(
-            (
-                i
-                    for i, opt in enumerate(item["options"])
-                    if answer.lower() in opt.lower()
-            ),
-            0,
-        )
-
-        else:
-            ans_index = 0
-
-            if answer in ["A", "B", "C", "D"]:
-                ans_index = ord(answer) - ord("A")
-
-            else:
-                ans_index = next(
-                    (
-                        i for i, opt in enumerate(item["options"])
-                        if answer.lower() in opt.lower()
-                    ),
-                    0
-                )
-
             formatted.append({
                 "q": item["question"],
                 "opts": item["options"],
-                "ans": ans_index,
+                "ans": item["options"].index(item["answer"]),
                 "explain": item["explanation"],
                 "why": ["", "", "", ""],
                 "topic": data.topic
@@ -140,12 +100,10 @@ Format:
             "mcqs": formatted
         }
 
-    except Exception as e:
-            traceback.print_exc()
+    except Exception:
 
-    return {
+        return {
             "topic": data.topic,
-            "error": str(e),
             "raw_response": response.text
         }
 @app.get("/")
