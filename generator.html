@@ -48,6 +48,9 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
 .btn-ghost:hover{border-color:rgba(248,250,252,.3);}
 .btn-primary{background:linear-gradient(135deg,var(--violet),#7C3AED);color:#fff;box-shadow:0 0 0 0 rgba(139,92,246,.5);}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px -6px rgba(139,92,246,.6);}
+.btn-debug{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.25);}
+.btn-debug:hover{background:rgba(34,211,238,.2);border-color:rgba(34,211,238,.4);}
+.btn-debug.active{background:rgba(34,211,238,.2);border-color:var(--cyan);box-shadow:0 0 20px rgba(34,211,238,.2);}
 
 /* ===== PAGE LAYOUT ===== */
 .page{min-height:100vh;padding:120px 24px 80px;display:flex;flex-direction:column;align-items:center;}
@@ -61,9 +64,12 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
 @keyframes gradientShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
 .page-sub{color:var(--text-secondary);font-size:16px;line-height:1.6;max-width:500px;margin:0 auto;}
 
-/* ===== GENERATOR CARD ===== */
+/* ===== GENERATOR CONTAINER ===== */
+.generator-container{width:min(1100px,100%);display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+@media(max-width:900px){.generator-container{grid-template-columns:1fr;}}
+
+/* ===== GEN CARD ===== */
 .gen-card{
-  width:min(920px,100%);
   border-radius:20px;
   border:1px solid rgba(248,250,252,.08);
   background:rgba(13,16,32,.6);
@@ -139,7 +145,6 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
   color:var(--violet-bright);font-size:12px;font-weight:600;letter-spacing:.04em;
 }
 
-/* file attached state */
 .file-preview{
   display:none;align-items:center;gap:14px;
   background:rgba(20,241,149,.05);border:1px solid rgba(20,241,149,.2);
@@ -170,7 +175,6 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
 .topic-field::placeholder{color:var(--text-tertiary);}
 .topic-field:focus{border-color:rgba(139,92,246,.5);box-shadow:0 0 0 3px rgba(139,92,246,.1);}
 
-/* topic chips */
 .topic-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 .chip{
   display:inline-flex;align-items:center;gap:6px;
@@ -179,6 +183,7 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
   transition:background .2s,border-color .2s,transform .15s;
 }
 .chip:hover{background:rgba(139,92,246,.2);border-color:rgba(167,139,250,.5);transform:translateY(-1px);}
+.chip.used{opacity:.4;pointer-events:none;}
 
 /* ===== DIFFICULTY ===== */
 .diff-group{display:flex;gap:10px;}
@@ -188,14 +193,11 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
   font-size:13px;font-weight:600;cursor:pointer;text-align:center;
   transition:all .22s;position:relative;overflow:hidden;
 }
-.diff-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;}
 .diff-btn:hover{color:var(--text-primary);border-color:rgba(248,250,252,.2);}
-
 .diff-btn[data-diff="easy"].active{background:rgba(20,241,149,.1);border-color:rgba(20,241,149,.4);color:#14F195;}
 .diff-btn[data-diff="medium"].active{background:rgba(255,180,84,.1);border-color:rgba(255,180,84,.4);color:#FFB454;}
 .diff-btn[data-diff="hard"].active{background:rgba(255,79,216,.1);border-color:rgba(255,79,216,.4);color:#FF4FD8;}
 .diff-btn[data-diff="mixed"].active{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.45);color:var(--violet-bright);}
-
 .diff-indicator{font-size:16px;display:block;margin-bottom:4px;}
 
 /* ===== QUESTION COUNT ===== */
@@ -301,8 +303,6 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
 .btn-generate:active{transform:translateY(0);}
 .btn-generate .gen-icon{display:inline-block;margin-left:8px;transition:transform .25s;}
 .btn-generate:hover .gen-icon{transform:translateX(3px);}
-
-/* loading state */
 .btn-generate.loading{pointer-events:none;opacity:.85;}
 .btn-generate.loading .btn-text{opacity:0;}
 .btn-generate .spinner{
@@ -312,6 +312,123 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
 }
 @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg);}}
 .btn-generate.loading .spinner{display:block;}
+
+/* ===== DEBUG PANEL ===== */
+.debug-panel.hidden{
+  display:none;
+}
+.debug-panel{
+  border-radius:20px;
+  border:1px solid rgba(34,211,238,.15);
+  background:rgba(13,16,32,.6);
+  backdrop-filter:blur(24px);
+  overflow:hidden;
+  animation:fadeUp .7s ease .15s both;
+  position:sticky;top:100px;
+  max-height:calc(100vh - 140px);
+  display:none;
+  flex-direction:column;
+}
+.debug-panel.visible {
+    display: flex; /* Show when toggled */
+}
+.debug-header{
+  padding:14px 20px;
+  border-bottom:1px solid rgba(248,250,252,.06);
+  background:rgba(6,8,20,.4);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.debug-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--cyan);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.debug-title .dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--cyan);
+  animation:pulseDot 1.5s ease-in-out infinite;
+}
+.debug-actions{display:flex;gap:6px;}
+.debug-clear{
+  padding:4px 12px;
+  border-radius:6px;
+  border:1px solid rgba(248,250,252,.1);
+  background:transparent;
+  color:var(--text-tertiary);
+  font-size:11px;
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:all .2s;
+}
+.debug-clear:hover{color:var(--text-primary);border-color:rgba(248,250,252,.25);}
+.debug-toggle{
+  padding:4px 12px;
+  border-radius:6px;
+  border:1px solid rgba(34,211,238,.2);
+  background:rgba(34,211,238,.08);
+  color:var(--cyan);
+  font-size:11px;
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:all .2s;
+}
+.debug-toggle:hover{background:rgba(34,211,238,.15);}
+.debug-toggle.active{background:rgba(34,211,238,.2);border-color:rgba(34,211,238,.4);}
+
+.debug-body{
+  padding:12px 16px;
+  overflow-y:auto;
+  flex:1;
+  min-height:200px;
+  max-height:500px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  line-height:1.6;
+  background:rgba(3,4,10,.5);
+}
+.debug-body::-webkit-scrollbar{width:4px;}
+.debug-body::-webkit-scrollbar-track{background:transparent;}
+.debug-body::-webkit-scrollbar-thumb{background:rgba(34,211,238,.2);border-radius:4px;}
+
+.debug-log{
+  padding:4px 0;
+  border-bottom:1px solid rgba(248,250,252,.03);
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.debug-time{
+  color:var(--text-tertiary);
+  font-size:10px;
+  flex-shrink:0;
+  min-width:70px;
+}
+.debug-msg{
+  color:var(--text-secondary);
+  word-break:break-word;
+}
+.debug-msg.info{color:var(--text-secondary);}
+.debug-msg.success{color:var(--teal);}
+.debug-msg.error{color:var(--red);}
+.debug-msg.warning{color:var(--amber);}
+.debug-msg.request{color:var(--cyan);}
+.debug-msg.response{color:var(--violet-bright);}
+.debug-msg.json{color:#fff;font-size:10px;background:rgba(139,92,246,.08);padding:4px 8px;border-radius:4px;margin-top:4px;display:block;white-space:pre-wrap;font-family:'JetBrains Mono',monospace;max-height:100px;overflow-y:auto;}
+
+.debug-empty{
+  color:var(--text-tertiary);
+  text-align:center;
+  padding:40px 0;
+  font-size:13px;
+}
+.debug-empty .icon{font-size:28px;display:block;margin-bottom:10px;}
 
 /* ===== GENERATING OVERLAY ===== */
 .gen-overlay{
@@ -388,6 +505,8 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
   <div class="nav-right">
     <button class="btn btn-ghost">Sign In</button>
     <button class="btn btn-primary">Get Started</button>
+    <!-- Add this in the nav-right section -->
+    <button class="btn btn-debug active" onclick="toggleDebugPanel()">🐞 Debug</button>
   </div>
 </nav>
 
@@ -401,146 +520,169 @@ nav.solid{background:rgba(6,8,20,.82);border-bottom-color:rgba(248,250,252,.1);}
     <p class="page-sub">Drop your study material, configure your preferences, and let the AI build your question set in seconds.</p>
   </div>
 
-  <!-- GENERATOR CARD -->
-  <div class="gen-card">
+  <!-- GENERATOR + DEBUG PANEL -->
+  <div class="generator-container">
 
-    <!-- top bar -->
-    <div class="card-topbar">
-      <div class="card-dots"><span></span><span></span><span></span></div>
-      <div class="card-status"><span class="live-dot"></span>mcq-engine ready</div>
-    </div>
+    <!-- MAIN GENERATOR CARD -->
+    <div class="gen-card">
 
-    <!-- body -->
-    <div class="card-body">
-      <div class="card-grid">
+      <!-- top bar -->
+      <div class="card-topbar">
+        <div class="card-dots"><span></span><span></span><span></span></div>
+        <div class="card-status"><span class="live-dot"></span>mcq-engine ready</div>
+      </div>
 
-        <!-- ① PDF DROP ZONE -->
-        <div style="grid-column:1/-1">
-          <div class="sec-label">Source material</div>
-          <div class="drop-zone" id="dropZone">
-            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.pptx" multiple>
-            <div class="drop-icon">📄</div>
-            <h3>Drop your study files here</h3>
-            <p>PDF, DOCX, TXT, or PPTX &nbsp;·&nbsp; Max 50 MB per file</p>
-            <span class="drop-hint">Click to browse or drag &amp; drop</span>
-          </div>
+      <!-- body -->
+      <div class="card-body">
+        <div class="card-grid">
 
-          <!-- file preview (shown after upload) -->
-          <div class="file-preview" id="filePreview">
-            <div class="file-icon">📑</div>
-            <div>
-              <div class="file-name" id="fileName">document.pdf</div>
-              <div class="file-size" id="fileSize">2.4 MB · Ready for processing</div>
+          <!-- ① PDF DROP ZONE -->
+          <div style="grid-column:1/-1">
+            <div class="sec-label">Source material</div>
+            <div class="drop-zone" id="dropZone">
+              <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.pptx" multiple>
+              <div class="drop-icon">📄</div>
+              <h3>Drop your study files here</h3>
+              <p>PDF, DOCX, TXT, or PPTX &nbsp;·&nbsp; Max 50 MB per file</p>
+              <span class="drop-hint">Click to browse or drag &amp; drop</span>
             </div>
-            <button class="file-remove" id="fileRemove" title="Remove">✕</button>
-          </div>
-        </div>
 
-        <!-- ② TOPIC / NOTES -->
-        <div class="topic-wrap">
-          <div class="sec-label">Topic focus &amp; notes</div>
-          <textarea
-            class="topic-field"
-            id="topicField"
-            placeholder="Add specific topics, chapters, or notes to focus on… e.g. 'Chapter 4 — Cellular Respiration, ATP synthesis, Krebs cycle'"
-          ></textarea>
-          <div class="topic-chips">
-            <span class="chip" onclick="addChip(this)">+ Definitions</span>
-            <span class="chip" onclick="addChip(this)">+ Key Formulas</span>
-            <span class="chip" onclick="addChip(this)">+ Case Studies</span>
-            <span class="chip" onclick="addChip(this)">+ Diagrams</span>
-            <span class="chip" onclick="addChip(this)">+ Dates &amp; Events</span>
+            <!-- file preview (shown after upload) -->
+            <div class="file-preview" id="filePreview">
+              <div class="file-icon">📑</div>
+              <div>
+                <div class="file-name" id="fileName">document.pdf</div>
+                <div class="file-size" id="fileSize">2.4 MB · Ready for processing</div>
+              </div>
+              <button class="file-remove" id="fileRemove" title="Remove">✕</button>
+            </div>
           </div>
-        </div>
 
-        <!-- ③ DIFFICULTY -->
-        <div>
-          <div class="sec-label">Difficulty level</div>
-          <div class="diff-group">
-            <button class="diff-btn" data-diff="easy" onclick="setDiff(this)">
-              <span class="diff-indicator">🟢</span>Easy
+          <!-- ② TOPIC / NOTES -->
+          <div class="topic-wrap">
+            <div class="sec-label">Topic focus &amp; notes</div>
+            <textarea
+              class="topic-field"
+              id="topicField"
+              placeholder="Add specific topics, chapters, or notes to focus on… e.g. 'Chapter 4 — Cellular Respiration, ATP synthesis, Krebs cycle'"
+            ></textarea>
+            <div class="topic-chips">
+              <span class="chip" onclick="addChip(this)">+ Definitions</span>
+              <span class="chip" onclick="addChip(this)">+ Key Formulas</span>
+              <span class="chip" onclick="addChip(this)">+ Case Studies</span>
+              <span class="chip" onclick="addChip(this)">+ Diagrams</span>
+              <span class="chip" onclick="addChip(this)">+ Dates &amp; Events</span>
+            </div>
+          </div>
+
+          <!-- ③ DIFFICULTY -->
+          <div>
+            <div class="sec-label">Difficulty level</div>
+            <div class="diff-group">
+              <button class="diff-btn" data-diff="easy" onclick="setDiff(this)">
+                <span class="diff-indicator">🟢</span>Easy
+              </button>
+              <button class="diff-btn active" data-diff="medium" onclick="setDiff(this)">
+                <span class="diff-indicator">🟡</span>Medium
+              </button>
+              <button class="diff-btn" data-diff="hard" onclick="setDiff(this)">
+                <span class="diff-indicator">🔴</span>Hard
+              </button>
+              <button class="diff-btn" data-diff="mixed" onclick="setDiff(this)">
+                <span class="diff-indicator">✦</span>Mixed
+              </button>
+            </div>
+          </div>
+
+          <!-- ④ NUMBER OF QUESTIONS -->
+          <div>
+            <div class="sec-label">Number of questions</div>
+            <div class="count-control">
+              <button class="count-btn" id="countMinus">−</button>
+              <div>
+                <div class="count-display" id="countDisplay">25</div>
+                <div class="count-label">questions</div>
+              </div>
+              <button class="count-btn" id="countPlus">+</button>
+            </div>
+            <input type="range" class="count-slider" id="countSlider" min="5" max="100" value="25" step="5">
+            <div class="count-presets">
+              <button class="count-preset" onclick="setCount(10)">10</button>
+              <button class="count-preset active" onclick="setCount(25)">25</button>
+              <button class="count-preset" onclick="setCount(50)">50</button>
+              <button class="count-preset" onclick="setCount(100)">100</button>
+            </div>
+          </div>
+
+          <!-- ⑤ QUESTION TYPE -->
+          <div style="grid-column:1/-1">
+            <div class="sec-label">Question type</div>
+            <div class="type-grid">
+              <div class="type-card active" data-type="mcq" onclick="toggleType(this)">
+                <span class="type-check">✓</span>
+                <span class="type-icon">🎯</span>
+                <div class="type-name">Multiple Choice</div>
+                <div class="type-desc">4 options per question, single correct answer</div>
+              </div>
+              <div class="type-card" data-type="msq" onclick="toggleType(this)">
+                <span class="type-check"></span>
+                <span class="type-icon">☑️</span>
+                <div class="type-name">Multi-Select</div>
+                <div class="type-desc">Select all that apply, one or more correct</div>
+              </div>
+              <div class="type-card" data-type="tf" onclick="toggleType(this)">
+                <span class="type-check"></span>
+                <span class="type-icon">⚖️</span>
+                <div class="type-name">True / False</div>
+                <div class="type-desc">Binary judgment with explanation</div>
+              </div>
+              <div class="type-card" data-type="fib" onclick="toggleType(this)">
+                <span class="type-check"></span>
+                <span class="type-icon">✏️</span>
+                <div class="type-name">Fill in the Blank</div>
+                <div class="type-desc">Key term recall from context</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIVIDER -->
+          <div class="gen-divider"></div>
+
+          <!-- ⑥ FOOTER: SUMMARY + GENERATE -->
+          <div class="gen-footer">
+            <div class="gen-summary" id="genSummary">
+              <span class="summary-chip"><span class="badge-dot" style="background:var(--teal)"></span><span id="s-q">25 questions</span></span>
+              <span class="summary-chip"><span class="badge-dot" style="background:var(--amber)"></span><span id="s-d">Medium</span></span>
+              <span class="summary-chip"><span class="badge-dot" style="background:var(--cyan)"></span><span id="s-t">MCQ</span></span>
+            </div>
+            <button class="btn-generate" id="generateBtn" onclick="startGenerate()">
+              <span class="btn-text">Generate MCQs <span class="gen-icon">→</span></span>
+              <span class="spinner"></span>
             </button>
-            <button class="diff-btn active" data-diff="medium" onclick="setDiff(this)">
-              <span class="diff-indicator">🟡</span>Medium
-            </button>
-            <button class="diff-btn" data-diff="hard" onclick="setDiff(this)">
-              <span class="diff-indicator">🔴</span>Hard
-            </button>
-            <button class="diff-btn" data-diff="mixed" onclick="setDiff(this)">
-              <span class="diff-indicator">✦</span>Mixed
-            </button>
           </div>
+
         </div>
-
-        <!-- ④ NUMBER OF QUESTIONS -->
-        <div>
-          <div class="sec-label">Number of questions</div>
-          <div class="count-control">
-            <button class="count-btn" id="countMinus">−</button>
-            <div>
-              <div class="count-display" id="countDisplay">25</div>
-              <div class="count-label">questions</div>
-            </div>
-            <button class="count-btn" id="countPlus">+</button>
-          </div>
-          <input type="range" class="count-slider" id="countSlider" min="5" max="100" value="25" step="5">
-          <div class="count-presets">
-            <button class="count-preset" onclick="setCount(10)">10</button>
-            <button class="count-preset active" onclick="setCount(25)">25</button>
-            <button class="count-preset" onclick="setCount(50)">50</button>
-            <button class="count-preset" onclick="setCount(100)">100</button>
-          </div>
-        </div>
-
-        <!-- ⑤ QUESTION TYPE -->
-        <div style="grid-column:1/-1">
-          <div class="sec-label">Question type</div>
-          <div class="type-grid">
-            <div class="type-card active" data-type="mcq" onclick="toggleType(this)">
-              <span class="type-check">✓</span>
-              <span class="type-icon">🎯</span>
-              <div class="type-name">Multiple Choice</div>
-              <div class="type-desc">4 options per question, single correct answer</div>
-            </div>
-            <div class="type-card" data-type="msq" onclick="toggleType(this)">
-              <span class="type-check"></span>
-              <span class="type-icon">☑️</span>
-              <div class="type-name">Multi-Select</div>
-              <div class="type-desc">Select all that apply, one or more correct</div>
-            </div>
-            <div class="type-card" data-type="tf" onclick="toggleType(this)">
-              <span class="type-check"></span>
-              <span class="type-icon">⚖️</span>
-              <div class="type-name">True / False</div>
-              <div class="type-desc">Binary judgment with explanation</div>
-            </div>
-            <div class="type-card" data-type="fib" onclick="toggleType(this)">
-              <span class="type-check"></span>
-              <span class="type-icon">✏️</span>
-              <div class="type-name">Fill in the Blank</div>
-              <div class="type-desc">Key term recall from context</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DIVIDER -->
-        <div class="gen-divider"></div>
-
-        <!-- ⑥ FOOTER: SUMMARY + GENERATE -->
-        <div class="gen-footer">
-          <div class="gen-summary" id="genSummary">
-            <span class="summary-chip"><span class="badge-dot" style="background:var(--teal)"></span><span id="s-q">25 questions</span></span>
-            <span class="summary-chip"><span class="badge-dot" style="background:var(--amber)"></span><span id="s-d">Medium</span></span>
-            <span class="summary-chip"><span class="badge-dot" style="background:var(--cyan)"></span><span id="s-t">MCQ</span></span>
-          </div>
-          <button class="btn-generate" id="generateBtn" onclick="startGenerate()">
-            <span class="btn-text">Generate MCQs <span class="gen-icon">→</span></span>
-            <span class="spinner"></span>
-          </button>
-        </div>
-
       </div>
     </div>
+
+    <!-- DEBUG PANEL -->
+    <div class="debug-panel" id="debugPanel">
+      <div class="debug-header">
+        <div class="debug-title"><span class="dot"></span>🔍 Debug Console</div>
+        <div class="debug-actions">
+          <button class="debug-toggle active" id="debugToggle" onclick="toggleDebugAutoScroll()">Auto-scroll</button>
+          <button class="debug-clear" onclick="clearDebug()">Clear</button>
+        </div>
+      </div>
+      <div class="debug-body" id="debugBody">
+        <div class="debug-empty">
+          <span class="icon">⚡</span>
+          Ready for action<br>
+          <span style="font-size:10px;color:var(--text-tertiary);">Logs will appear here when you generate MCQs</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -584,6 +726,87 @@ const cur=document.getElementById('cursor');
 const glow=document.getElementById('cursor-glow');
 window.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px';});
 
+/* ---- DEBUG LOGGING ---- */
+let debugLogs = [];
+let debugAutoScroll = true;
+let debugInitialized = false;
+
+function addDebugLog(message, type = 'info', data = null) {
+  const time = new Date().toLocaleTimeString();
+  debugLogs.push({ time, message, type, data });
+  
+  if (!debugInitialized) {
+    debugInitialized = true;
+    const body = document.getElementById('debugBody');
+    body.innerHTML = '';
+  }
+  
+  renderDebugLogs();
+}
+
+function renderDebugLogs() {
+  const body = document.getElementById('debugBody');
+  const scrollToBottom = debugAutoScroll && body.scrollTop + body.clientHeight >= body.scrollHeight - 20;
+  
+  body.innerHTML = debugLogs.map(log => {
+    let msgHtml = `<span class="debug-msg ${log.type}">${log.message}</span>`;
+    if (log.data) {
+      try {
+        const jsonStr = typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2);
+        msgHtml += `<span class="debug-msg json">${escapeHtml(jsonStr)}</span>`;
+      } catch (e) {
+        msgHtml += `<span class="debug-msg json">${escapeHtml(String(log.data))}</span>`;
+      }
+    }
+    return `<div class="debug-log">
+      <span class="debug-time">${log.time}</span>
+      ${msgHtml}
+    </div>`;
+  }).join('');
+  
+  if (scrollToBottom || debugAutoScroll) {
+    body.scrollTop = body.scrollHeight;
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function clearDebug() {
+  debugLogs = [];
+  const body = document.getElementById('debugBody');
+  body.innerHTML = `<div class="debug-empty">
+    <span class="icon">🧹</span>
+    Logs cleared<br>
+    <span style="font-size:10px;color:var(--text-tertiary);">Generate again to see new logs</span>
+  </div>`;
+  debugInitialized = false;
+}
+
+function toggleDebugAutoScroll() {
+  debugAutoScroll = !debugAutoScroll;
+  const btn = document.getElementById('debugToggle');
+  btn.classList.toggle('active');
+  btn.textContent = debugAutoScroll ? 'Auto-scroll' : 'Paused';
+}
+// Add to your existing JavaScript
+// Replace the initial log with a toggle function
+function toggleDebugPanel() {
+    const panel = document.getElementById('debugPanel');
+    panel.classList.toggle('visible');
+}
+
+// Show debug panel when generating
+async function startGenerate() {
+    // ... existing code ...
+    
+    // Show debug panel when generation starts
+    document.getElementById('debugPanel').classList.add('visible');
+}
+
 /* ---- FILE DROP ---- */
 const dz=document.getElementById('dropZone');
 const fi=document.getElementById('fileInput');
@@ -598,8 +821,9 @@ function showFile(file){
   fs.textContent=`${mb} MB · Ready for processing`;
   fp.classList.add('show');
   dz.style.display='none';
+  addDebugLog(`📎 File uploaded: ${file.name} (${mb} MB)`, 'info');
 }
-function clearFile(){fp.classList.remove('show');dz.style.display='';fi.value='';}
+function clearFile(){fp.classList.remove('show');dz.style.display='';fi.value='';addDebugLog('📎 File removed', 'info');}
 
 fi.addEventListener('change',e=>{if(e.target.files[0])showFile(e.target.files[0]);});
 fr.addEventListener('click',clearFile);
@@ -618,8 +842,9 @@ function addChip(chip){
   const ta=document.getElementById('topicField');
   const cur=ta.value.trim();
   ta.value=cur?(cur+', '+txt):txt;
-  chip.style.opacity='.4';chip.style.pointerEvents='none';
+  chip.classList.add('used');
   ta.focus();
+  addDebugLog(`🏷️ Added chip: ${txt}`, 'info');
 }
 
 /* ---- DIFFICULTY ---- */
@@ -629,6 +854,7 @@ function setDiff(btn){
   btn.classList.add('active');
   currentDiff=btn.dataset.diff;
   updateSummary();
+  addDebugLog(`🎯 Difficulty set to: ${currentDiff}`, 'info');
 }
 
 /* ---- COUNT ---- */
@@ -636,36 +862,15 @@ let qCount=25;
 const slider=document.getElementById('countSlider');
 const display=document.getElementById('countDisplay');
 
-/* ---- TYPE TOGGLE ---- */
-let activeTypes = ['mcq'];
-
-const typeLabels = {
-    mcq:'MCQ',
-    msq:'Multi-Select',
-    tf:'True/False',
-    fib:'Fill-in-Blank'
-};
-
-/* ---- SUMMARY ---- */
-function updateSummary(){
-  document.getElementById('s-q').textContent=qCount+' questions';
-  document.getElementById('s-d').textContent=currentDiff.charAt(0).toUpperCase()+currentDiff.slice(1);
-  document.getElementById('s-t').textContent=activeTypes.map(t=>typeLabels[t]).join(' + ');
-}
-
 function setCount(n){
     qCount = Math.min(100, Math.max(5, n));
-
     display.textContent = qCount;
     slider.value = qCount;
-
     const pct = ((qCount - 5) / (100 - 5)) * 100;
     slider.style.setProperty('--pct', pct + '%');
-
     document.querySelectorAll('.count-preset').forEach(p=>{
         p.classList.toggle('active', parseInt(p.textContent) === qCount);
     });
-
     updateSummary();
 }
 
@@ -673,41 +878,50 @@ slider.addEventListener('input', () => setCount(parseInt(slider.value)));
 document.getElementById('countMinus').addEventListener('click', () => setCount(qCount - 5));
 document.getElementById('countPlus').addEventListener('click', () => setCount(qCount + 5));
 
+/* ---- TYPE TOGGLE ---- */
+let activeTypes = ['mcq'];
+const typeLabels = { mcq:'MCQ', msq:'Multi-Select', tf:'True/False', fib:'Fill-in-Blank' };
+
 function toggleType(card){
   const t = card.dataset.type;
-
   if(activeTypes.includes(t)){
     if(activeTypes.length===1) return;
-
     activeTypes = activeTypes.filter(x => x !== t);
-
     card.classList.remove('active');
     card.querySelector('.type-check').textContent = '';
-
   } else {
-
     activeTypes.push(t);
-
     card.classList.add('active');
     card.querySelector('.type-check').textContent = '✓';
-
   }
-
   updateSummary();
+  addDebugLog(`📝 Question types: ${activeTypes.map(t=>typeLabels[t]).join(', ')}`, 'info');
+}
+
+function updateSummary(){
+  document.getElementById('s-q').textContent=qCount+' questions';
+  document.getElementById('s-d').textContent=currentDiff.charAt(0).toUpperCase()+currentDiff.slice(1);
+  document.getElementById('s-t').textContent=activeTypes.map(t=>typeLabels[t]).join(' + ');
 }
 
 setCount(25);
+
 /* ---- GENERATE ---- */
-const steps=['Parsing uploaded material…','Extracting key concepts…','Mapping knowledge graph…','Generating question stems…','Building answer options…','Validating distractors…','Adding AI explanations…','Finalising MCQ set…'];
+const steps=['Initialising AI engine…','Parsing uploaded material…','Extracting key concepts…','Mapping knowledge graph…','Generating question stems…','Building answer options…','Validating distractors…','Adding AI explanations…','Finalising MCQ set…'];
 
 async function startGenerate() {
-
     const topic = document.getElementById("topicField").value.trim();
-
     if (topic === "") {
+        addDebugLog('❌ Error: Topic field is empty', 'error');
         alert("Please enter a topic.");
         return;
     }
+
+    addDebugLog('🚀 Starting MCQ generation...', 'request');
+    addDebugLog(`📋 Topic: "${topic}"`, 'info');
+    addDebugLog(`🎯 Difficulty: ${currentDiff}`, 'info');
+    addDebugLog(`🔢 Questions: ${qCount}`, 'info');
+    addDebugLog(`📝 Types: ${activeTypes.map(t=>typeLabels[t]).join(', ')}`, 'info');
 
     const btn = document.getElementById("generateBtn");
     const overlay = document.getElementById("genOverlay");
@@ -717,132 +931,127 @@ async function startGenerate() {
     btn.classList.add("loading");
     overlay.classList.add("show");
 
-    // Animate overlay while AI is generating
     let progress = 0;
     let step = 0;
-
     stepEl.textContent = steps[0];
+    addDebugLog(`⏳ ${steps[0]}`, 'info');
 
     const loading = setInterval(() => {
-
         if (progress < 95) {
             progress += 12;
             bar.style.width = progress + "%";
         }
-
         if (step < steps.length - 1) {
             step++;
             stepEl.textContent = steps[step];
+            addDebugLog(`⏳ ${steps[step]}`, 'info');
         }
-
     }, 700);
 
     try {
-
+        addDebugLog('📡 Sending request to /generate-mcq...', 'request');
+        
         const response = await fetch("/generate-mcq", {
-
             method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-
                 topic: topic,
                 difficulty: currentDiff,
                 count: qCount,
                 types: activeTypes
-
             })
-
         });
 
+        addDebugLog(`📡 Response status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
         if (!response.ok) {
-            throw new Error("Server Error");
+            const errorText = await response.text();
+            addDebugLog(`❌ Server error: ${errorText}`, 'error');
+            throw new Error(`Server Error: ${response.status}`);
         }
 
         const data = await response.json();
+        addDebugLog(`✅ Response received (${data.mcqs?.length || 0} questions)`, 'success');
+        addDebugLog(`📊 Response preview:`, 'response', data);
 
-console.log("Backend Response:", data);
-console.log("MCQS:", data.mcqs);
-
-if (!data.mcqs) {
-    alert("Backend did not return MCQs.");
-    return;
-}
-
-console.log(data);
-console.log(data.mcqs);
-
-localStorage.setItem("mcqs", JSON.stringify(data.mcqs));
-
-console.log("Saved:", localStorage.getItem("mcqs"));
-
-clearInterval(loading);
-
-bar.style.width = "100%";
-stepEl.textContent = "MCQs Generated Successfully ✓";
-
-setTimeout(() => {
-    window.location.href = "/loading";
-}, 700);
-
-        clearInterval(loading);
-
-        bar.style.width = "100%";
-        stepEl.textContent = "MCQs Generated Successfully ✓";
-
-        localStorage.setItem(
-            "mcqs",
-            JSON.stringify(data.mcqs)
-        );
-
-        setTimeout(() => {
-            window.location.href ="/loading";
-        }, 700);
-
-    }
-
-    catch (err) {
-
-        clearInterval(loading);
-
-        console.error(err);
-
-        alert("Unable to connect to AI.");
-
-    }
-
-    finally {
-
-        setTimeout(() => {
+        if (!data.mcqs || data.mcqs.length === 0) {
+            addDebugLog('❌ No MCQs in response', 'error');
+            alert("No MCQs were generated. Please try again with a different topic.");
+            clearInterval(loading);
             btn.classList.remove("loading");
             overlay.classList.remove("show");
+            return;
+        }
+
+        // Show first question as preview
+        const preview = data.mcqs[0];
+        addDebugLog(`📖 Sample question: "${preview.q.substring(0, 60)}..."`, 'success');
+
+        localStorage.setItem("mcqs", JSON.stringify(data.mcqs));
+        addDebugLog('💾 MCQs saved to localStorage', 'success');
+
+        clearInterval(loading);
+        bar.style.width = "100%";
+        stepEl.textContent = "MCQs Generated Successfully ✓";
+        addDebugLog('✅ Generation complete! Redirecting to quiz...', 'success');
+
+        setTimeout(() => {
+            window.location.href = "/loading";
         }, 700);
 
+    } catch (err) {
+        clearInterval(loading);
+        addDebugLog(`❌ Error: ${err.message}`, 'error');
+        console.error("Error:", err);
+        
+        let errorMsg = "Unable to connect to the AI service. ";
+        if (err.message.includes("Server Error")) {
+            errorMsg += "Please check if the server is running correctly.";
+        } else if (err.message.includes("Failed to fetch")) {
+            errorMsg += "Please ensure the server is running.";
+        } else {
+            errorMsg += err.message || "Please try again.";
+        }
+        alert(errorMsg);
+        
+        btn.classList.remove("loading");
+        overlay.classList.remove("show");
     }
-
 }
 
-function showSuccess(){
-  const toast=document.createElement('div');
-  toast.style.cssText='position:fixed;bottom:32px;right:32px;z-index:200;background:rgba(20,241,149,.1);border:1px solid rgba(20,241,149,.35);border-radius:14px;padding:16px 22px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);animation:fadeUp .4s ease;font-size:14px;font-weight:500;max-width:320px;';
-  toast.innerHTML=`<span style="font-size:20px">✅</span><div><div style="color:#14F195;font-weight:600;margin-bottom:2px;">${qCount} MCQs ready!</div><div style="color:var(--text-secondary);font-size:13px;">${currentDiff} difficulty · ${activeTypes.map(t=>typeLabels[t]).join(', ')}</div></div>`;
-  document.body.appendChild(toast);
-  setTimeout(()=>{toast.style.transition='opacity .5s';toast.style.opacity='0';setTimeout(()=>toast.remove(),500);},4000);
+/* ---- Test API button (hidden debug feature) ---- */
+async function testAPI() {
+    addDebugLog('🔍 Testing API connection...', 'request');
+    try {
+        const response = await fetch("/test-api");
+        const data = await response.json();
+        if (data.status === 'ok') {
+            addDebugLog(`✅ API test successful: ${data.response}`, 'success');
+        } else {
+            addDebugLog(`❌ API test failed: ${data.error}`, 'error');
+        }
+    } catch (e) {
+        addDebugLog(`❌ API test error: ${e.message}`, 'error');
+    }
 }
 
-/* ---- MAGNETIC BUTTONS ---- */
-document.querySelectorAll('.btn, .btn-generate').forEach(btn=>{
-  btn.addEventListener('mousemove',e=>{
-    const r=btn.getBoundingClientRect();
-    const x=e.clientX-r.left-r.width/2;
-    const y=e.clientY-r.top-r.height/2;
-    btn.style.transform=`translate(${x*.1}px,${y*.2}px)`;
-  });
-  btn.addEventListener('mouseleave',()=>{btn.style.transform='';});
+// Add keyboard shortcut: Ctrl+Shift+D to toggle debug panel
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        const panel = document.getElementById('debugPanel');
+        panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+        e.preventDefault();
+    }
 });
+
+// Add test button via console
+console.log('🔍 Debug commands:');
+console.log('  testAPI() - Test API connection');
+console.log('  addDebugLog("message", "type") - Add log');
+console.log('  clearDebug() - Clear logs');
+
+// Initial log
+addDebugLog('⚡ Debug console ready. Press Ctrl+Shift+D to toggle.', 'info');
 </script>
 </body>
 </html>
